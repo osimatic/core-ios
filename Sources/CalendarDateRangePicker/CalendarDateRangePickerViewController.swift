@@ -1,14 +1,3 @@
-//
-//  CalendarDateRangePickerViewController.swift
-//  CalendarDateRangePickerViewController
-//
-//  Created by Miraan on 15/10/2017.
-//  Copyright © 2017 Miraan. All rights reserved.
-//
-
-// https://github.com/miraan/CalendarDateRangePickerViewController
-// https://github.com/cpajuelodeveloper/CalendarDateRangePicker-Swift5
-
 import UIKit
 
 public protocol CalendarDateRangePickerViewControllerDelegate {
@@ -16,6 +5,11 @@ public protocol CalendarDateRangePickerViewControllerDelegate {
 	func didPickDateRange(startDate: Date!, endDate: Date!)
 }
 
+/**
+ * Created by Miraan on 15/10/2017
+ * https://github.com/miraan/CalendarDateRangePickerViewController
+ * https://github.com/cpajuelodeveloper/CalendarDateRangePicker-Swift5
+ */
 public class CalendarDateRangePickerViewController: UICollectionViewController {
 	
 	let cellReuseIdentifier = "CalendarDateRangePickerCell"

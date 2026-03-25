@@ -1,12 +1,8 @@
-//
-//  CalendarDateRangePickerCell.swift
-//  CalendarDateRangePickerViewController
-//
-//  Created by Miraan on 15/10/2017.
-//  Copyright © 2017 Miraan. All rights reserved.
-//
 import UIKit
 
+/**
+ * Created by Miraan on 15/10/2017
+ */
 class CalendarDateRangePickerCell: UICollectionViewCell {
 	
 	private let defaultTextColor = UIColor.darkGray

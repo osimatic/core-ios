@@ -1,13 +1,8 @@
-//
-//  CalendarDateRangePickerHeaderView.swift
-//  CalendarDateRangePickerViewController
-//
-//  Created by Miraan on 15/10/2017.
-//  Copyright © 2017 Miraan. All rights reserved.
-//
-
 import UIKit
 
+/**
+ * Created by Miraan on 15/10/2017
+ */
 class CalendarDateRangePickerHeaderView: UICollectionReusableView {
     
     var label: UILabel!

@@ -1,14 +1,9 @@
-//
-//  ViewPagerOptions.swift
-//  ViewPager-Swift
-//
-//  Created by Nishan on 2/9/16.
-//  Copyright © 2016 Nishan. All rights reserved.
-//
-
 import UIKit
 import Foundation
 
+/**
+ * Created by Nishan Niraula on 2/9/16.
+ */
 public class ViewPagerOptions {
     
     public enum Distribution {

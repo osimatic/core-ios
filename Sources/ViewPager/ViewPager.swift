@@ -1,14 +1,9 @@
-//
-//  ViewPager.swift
-//  ViewPager-Swift
-//
-//  Created by Nishan Niraula on 4/11/19.
-//  Copyright © 2019 Nishan. All rights reserved.
-//
-
 import Foundation
 import UIKit
 
+/**
+ * Created by Nishan Niraula on 4/11/19.
+ */
 public protocol ViewPagerDataSource: class {
     
     /// Number of pages to be displayed

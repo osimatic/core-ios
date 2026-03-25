@@ -1,17 +1,12 @@
-
-//
-//  DropDown.swift
-//
-//
-//  Created by Jishnu Raj T on 26/04/18.
-//  Copyright © 2018 JRiOSdev. All rights reserved.
-//
 import UIKit
 
 public protocol DropDownItem: AnyObject {
 	func getLabel() -> String
 }
 
+/**
+ * Created by Jishnu Raj T on 26/04/2018
+ */
 class DropDownEmptyItem: DropDownItem {
 	var text: String;
 	init(_ text: String) {

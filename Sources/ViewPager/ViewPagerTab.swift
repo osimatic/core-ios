@@ -1,14 +1,9 @@
-//
-//  ViewPagerTab.swift
-//  ViewPager-Swift
-//
-//  Created by Nishan on 1/9/17.
-//  Copyright © 2017 Nishan. All rights reserved.
-//
-
 import Foundation
 import UIKit
 
+/**
+ * Created by Nishan Niraula on 1/9/17.
+ */
 public enum ViewPagerTabType {
     /// Tab contains text only.
     case basic

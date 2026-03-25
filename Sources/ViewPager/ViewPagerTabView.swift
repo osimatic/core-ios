@@ -1,13 +1,8 @@
-//
-//  ViewPagerTabView.swift
-//  ViewPager-Swift
-//
-//  Created by Nishan on 1/9/17.
-//  Copyright © 2017 Nishan. All rights reserved.
-//
-
 import UIKit
 
+/**
+ * Created by Nishan Niraula on 1/9/17.
+ */
 public final class ViewPagerTabView: UIView {
     
     internal var titleLabel:UILabel?
