@@ -362,8 +362,9 @@ public class ViewPager: NSObject {
         /* Wierd bug in UIPageViewController. Due to caching, in scroll transition mode,
          wrong cached view controller is shown. This is the common workaround */
         pageController?.setViewControllers([chosenViewController], direction: direction, animated: true, completion: { (isCompleted) in
-            
-            DispatchQueue.main.async { [unowned self] in
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 
                 self.pageController?.setViewControllers([chosenViewController], direction: direction, animated: false, completion: { (isComplete) in
                     
@@ -381,10 +382,11 @@ public class ViewPager: NSObject {
         
         // Removing all the tabs from tabContainer
         _ = tabsViewList.map({ $0.removeFromSuperview() })
-        
-        tabIndicator = UIView()
+
+        tabIndicator.removeFromSuperview()
         tabIndicatorLeadingConstraint?.isActive = false
         tabIndicatorWidthConstraint?.isActive = false
+        tabIndicator = UIView()
         
         tabsList.removeAll()
         tabsViewList.removeAll()
@@ -395,11 +397,14 @@ public class ViewPager: NSObject {
     
     // MARK:- Actions
     @objc func tabContainerTapped(_ recognizer:UITapGestureRecognizer) {
-        
+
         let tapLocation = recognizer.location(in: self.tabContainer)
-        let tabViewTapped =  tabContainer.hitTest(tapLocation, with: nil)
-        
-        if let tabIndex = tabViewTapped?.tag, tabIndex != currentPageIndex {
+        var tappedView: UIView? = tabContainer.hitTest(tapLocation, with: nil)
+        while tappedView != nil && !(tappedView is ViewPagerTabView) {
+            tappedView = tappedView?.superview
+        }
+
+        if let tabIndex = tappedView?.tag, tabIndex != currentPageIndex {
             displayViewController(atIndex: tabIndex)
         }
     }
@@ -437,9 +442,9 @@ extension ViewPager: UIPageViewControllerDelegate {
     }
     
     public func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController]) {
-        
-        let pageIndex = pendingViewControllers.first?.view.tag
-        delegate?.willMoveToControllerAtIndex(index: pageIndex!)
+
+        guard let pageIndex = pendingViewControllers.first?.view.tag else { return }
+        delegate?.willMoveToControllerAtIndex(index: pageIndex)
     }
     
     

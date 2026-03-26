@@ -38,17 +38,7 @@ class DurationPickerAlert: UIAlertController, UIPickerViewDataSource, UIPickerVi
 		self.view.addSubview(hourPicker);
 		self.view.addSubview(minutePicker);
 		self.view.addSubview(secondPicker);
-		
-		// Position the UIPickerViews within the container view as needed
-		//hourPicker.frame = CGRect(x: 0, y: 0, width: 100, height: 200);
-		//minutePicker.frame = CGRect(x: 100, y: 0, width: 100, height: 200);
-		//secondPicker.frame = CGRect(x: 200, y: 0, width: 120, height: 200);
-		
-		// Add UIPickerView to the alert
-		self.view.addSubview(hourPicker)
-		self.view.addSubview(minutePicker)
-		self.view.addSubview(secondPicker)
-		
+
 		hourPicker.frame = CGRect(x: 0, y: 0, width: 100, height: 200);
 		minutePicker.frame = CGRect(x: 100, y: 0, width: 100, height: 200);
 		secondPicker.frame = CGRect(x: 200, y: 0, width: 120, height: 200);

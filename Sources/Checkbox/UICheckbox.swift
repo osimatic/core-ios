@@ -47,10 +47,12 @@ class UICheckbox: UIButton {
 	
 	override func awakeFromNib() {
 		super.awakeFromNib();
-		
+
 		if (!self.allTargets.contains(self)) {
 			super.addTarget(self, action: #selector(onClick), for: UIControl.Event.touchUpInside);
 		}
+
+		self.initStyle();
 	}
 
 	override func addTarget(_ target: Any?, action: Selector, for controlEvents: UIControl.Event) {

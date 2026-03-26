@@ -185,6 +185,15 @@ open class DropDown: UITextField {
 	}
 
 	fileprivate func addGesture() {
+		// Remove existing tap recognizers targeting touchAction before adding new ones
+		let targets = (isSearchEnable ? rightView?.gestureRecognizers : gestureRecognizers) ?? []
+		for gr in targets where (gr as? UITapGestureRecognizer) != nil {
+			(isSearchEnable ? rightView : self)?.removeGestureRecognizer(gr)
+		}
+		for gr in backgroundView.gestureRecognizers ?? [] where (gr as? UITapGestureRecognizer) != nil {
+			backgroundView.removeGestureRecognizer(gr)
+		}
+
 		let gesture = UITapGestureRecognizer(target: self, action: #selector(touchAction))
 		if isSearchEnable {
 			rightView?.addGestureRecognizer(gesture)
@@ -301,6 +310,7 @@ open class DropDown: UITextField {
 	}
 
 	func reSizeTable() {
+		guard table != nil, shadow != nil else { return }
 		if listHeight > rowHeight * CGFloat(dataArray.count) {
 			tableheightX = rowHeight * CGFloat(dataArray.count)
 		} else {
@@ -348,8 +358,9 @@ open class DropDown: UITextField {
 	}
 
 	public func setSelectedItem(_ selectedItem: DropDownItem?) -> Void {
-		if let selectedItem = selectedItem {
-			self.setSelectedIndex(self.optionArray.firstIndex(where: { $0.getLabel() == selectedItem.getLabel() }) ?? 0);
+		if let selectedItem = selectedItem,
+		   let index = self.optionArray.firstIndex(where: { $0.getLabel() == selectedItem.getLabel() }) {
+			self.setSelectedIndex(index);
 		}
 	}
 	
@@ -527,6 +538,7 @@ class Arrow: UIView {
 
 	init(origin: CGPoint, size: CGFloat) {
 		super.init(frame: CGRect(x: origin.x, y: origin.y, width: size, height: size))
+		layer.addSublayer(shapeLayer)
 	}
 
 	required init?(coder aDecoder: NSCoder) {
@@ -551,13 +563,7 @@ class Arrow: UIView {
 
 		// Mask to path
 		shapeLayer.path = bezierPath.cgPath
-		//  shapeLayer.fillColor = arrowColor.cgColor
-
-		if #available(iOS 12.0, *) {
-			self.layer.addSublayer(shapeLayer)
-		} else {
-			layer.mask = shapeLayer
-		}
+		shapeLayer.fillColor = arrowColor.cgColor
 	}
 }
 

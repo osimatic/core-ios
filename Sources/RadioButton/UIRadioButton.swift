@@ -77,10 +77,12 @@ class UIRadioButton: UIButton {
 	
 	override func awakeFromNib() {
 		super.awakeFromNib();
-		
+
 		if (!self.allTargets.contains(self)) {
 			super.addTarget(self, action: #selector(onClick), for: UIControl.Event.touchUpInside);
 		}
+
+		self.initStyle();
 	}
 
 	override func addTarget(_ target: Any?, action: Selector, for controlEvents: UIControl.Event) {
@@ -97,56 +99,44 @@ class UIRadioButton: UIButton {
 	}
 	
 	func setSelected(onSelect: Bool = true) {
-		for rb in self.groupBouttons ?? [] {
+		var allGroupButtons: [UIRadioButton] = self.groupBouttons ?? [];
+		if let group = self.group {
+			for rb in group.buttons where !allGroupButtons.contains(rb) {
+				allGroupButtons.append(rb);
+			}
+		}
+
+		for rb in allGroupButtons {
 			if (rb != self) {
-				//NSLog("isSelected = false");
 				rb.isSelected = false;
 			}
 		}
-		
-		if let group = self.group {
-			for rb in group.buttons {
-				if (rb != self) {
-					//NSLog("isSelected = false");
-					rb.isSelected = false;
-				}
-			}
-		}
-		
+
 		self.isSelected = true;
-		
+
 		if let onSelectCallback = self.onSelect, onSelect {
 			onSelectCallback(self);
 		}
-		
-		//self.isSelected = !self.isSelected;
-		
-		//self.onClick(sender: self);
 	}
 	
 	func setGroupButtons(_ buttons: [UIRadioButton]) {
-		//self.groupBouttons = buttons;
+		self.groupBouttons = buttons;
 		for rb in buttons {
 			rb.groupBouttons = buttons;
 		}
 	}
 	
 	@objc func onClick(sender: UIRadioButton) {
-		//NSLog("onClick");
 		if sender != self {
 			return;
 		}
-		
-		//guard let sender = sender as? RadioButton else {
-		//	return
-		//}
-		
-		self.setSelected();
-		
+
+		self.setSelected(onSelect: false);
+
 		if let delegate = sender.delegate {
 			delegate.onRadioButtonSelected(sender);
 		}
-		
+
 		if let onSelect = sender.onSelect {
 			onSelect(sender);
 		}

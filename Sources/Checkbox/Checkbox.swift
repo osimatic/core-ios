@@ -89,8 +89,8 @@ class Checkbox: UIControl {
 	//MARK: - handle touches
 	override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
 		super.touchesEnded(touches, with: event)
-		sendActions(for: .valueChanged)
 		isChecked.toggle()
+		sendActions(for: .valueChanged)
 	}
 
 	//MARK: - Increase hit area
