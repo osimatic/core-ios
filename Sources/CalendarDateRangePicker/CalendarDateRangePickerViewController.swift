@@ -59,7 +59,7 @@ public class CalendarDateRangePickerViewController: UICollectionViewController {
 		
 		self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: cancelNavigationButton, style: .plain, target: self, action: #selector(CalendarDateRangePickerViewController.didTapCancel))
 		self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: doneNavigationButton, style: .done, target: self, action: #selector(CalendarDateRangePickerViewController.didTapDone))
-		self.navigationItem.rightBarButtonItem?.isEnabled = selectedStartDate != nil && selectedEndDate != nil
+		self.navigationItem.rightBarButtonItem?.isEnabled = selectedStartDate != nil && (selectedEndDate != nil || allowSelectSingleDate)
 		
 		let section = Calendar.current.dateComponents([.month], from: self.minimumDate, to: focusOnDate ?? Date()).month ?? 0
 		collectionView.performBatchUpdates(nil, completion: {
@@ -96,7 +96,7 @@ extension CalendarDateRangePickerViewController {
 	override public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
 		let firstDateForSection = getFirstDateForSection(section: section)
 		let weekdayRowItems = 7
-		let blankItems = getWeekday(date: firstDateForSection) - Calendar.current.firstWeekday // change - 1 to - Calendar.current.firstWeekday pour commencer semaine à lundi
+		let blankItems = max(0, getWeekday(date: firstDateForSection) - Calendar.current.firstWeekday) // change - 1 to - Calendar.current.firstWeekday pour commencer semaine à lundi
 		let daysInMonth = getNumberOfDaysInMonth(date: firstDateForSection)
 		return weekdayRowItems + blankItems + daysInMonth
 	}
@@ -105,7 +105,7 @@ extension CalendarDateRangePickerViewController {
 		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellReuseIdentifier, for: indexPath) as! CalendarDateRangePickerCell
 		cell.selectedColor = self.selectedColor
 		cell.reset()
-		let blankItems = getWeekday(date: getFirstDateForSection(section: indexPath.section)) - Calendar.current.firstWeekday // change - 1 to - 2 pour commencer semaine à lundi
+		let blankItems = max(0, getWeekday(date: getFirstDateForSection(section: indexPath.section)) - Calendar.current.firstWeekday) // change - 1 to - 2 pour commencer semaine à lundi
 		if indexPath.item < 7 {
 			cell.label.text = String(DateTime.getWeekdayNameFromWeekdayNumber(indexPath.item + 1).uppercased().prefix(1));
 			//cell.label.text = getWeekdayLabel(weekday: indexPath.item + 1)
@@ -169,6 +169,7 @@ extension CalendarDateRangePickerViewController : UICollectionViewDelegateFlowLa
 		}
 		if selectedStartDate == nil {
 			selectedStartDate = cell.date
+			self.navigationItem.rightBarButtonItem?.isEnabled = allowSelectSingleDate
 		} else if selectedEndDate == nil {
 			if isBefore(dateA: selectedStartDate!, dateB: cell.date!) {
 				selectedEndDate = cell.date
@@ -176,10 +177,12 @@ extension CalendarDateRangePickerViewController : UICollectionViewDelegateFlowLa
 			} else {
 				// If a cell before the currently selected start date is selected then just set it as the new start date
 				selectedStartDate = cell.date
+				self.navigationItem.rightBarButtonItem?.isEnabled = allowSelectSingleDate
 			}
 		} else {
 			selectedStartDate = cell.date
 			selectedEndDate = nil
+			self.navigationItem.rightBarButtonItem?.isEnabled = allowSelectSingleDate
 		}
 		collectionView.reloadData()
 	}

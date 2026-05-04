@@ -8,6 +8,10 @@ extension UILabel {
 	func setHTMLFromAttributedString(_ text: NSAttributedString) {
 		self.attributedText = HTMLAttributedString.setFont(text, font: self.font);
 	}
+	func setTextWithLineBreaks(_ text: String?) {
+		guard let text = text else { self.text = nil; return; }
+		self.attributedText = text.replacingOccurrences(of: "\n", with: "<br>").toHtmlAttributedString(font: self.font);
+	}
 }
 
 extension UITextView {
