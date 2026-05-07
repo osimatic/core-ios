@@ -4,7 +4,7 @@ import AVFoundation
 /*
  * Utility class for loading audio resources from the app bundle.
  */
-class Audio {
+public class Audio {
 
 	/*
 	 * Creates and returns an AVAudioPlayer for a bundled audio file.
@@ -12,7 +12,7 @@ class Audio {
 	 * @param type      The file extension (e.g. "mp3", "wav").
 	 * @return A ready-to-use AVAudioPlayer, or nil if the file is not found or fails to load.
 	 */
-	static func getPlayer(ressource: String, type: String) -> AVAudioPlayer? {
+	public static func getPlayer(ressource: String, type: String) -> AVAudioPlayer? {
 		guard let filePath = Bundle.main.path(forResource: ressource, ofType: type) else {
 			return nil;
 		}

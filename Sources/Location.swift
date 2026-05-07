@@ -5,7 +5,7 @@ import Contacts
 /*
  * Utility class for location and address helpers.
  */
-class Location {
+public class Location {
 
 	/*
 	 * Returns the localized country name for a given ISO 3166-1 alpha-2 country code.
@@ -14,7 +14,7 @@ class Location {
 	 * @param countryCode A two-letter country code (e.g. "FR", "US").
 	 * @return The English country name, or nil if the code is unrecognized.
 	 */
-	static func getCountryNameFromCountryCode(_ countryCode: String) -> String? {
+	public static func getCountryNameFromCountryCode(_ countryCode: String) -> String? {
 		let current = Locale(identifier: "en_US")
 		return current.localizedString(forRegionCode: countryCode)
 	}
@@ -26,7 +26,7 @@ class Location {
 	 * @param coordinates A string in "lat,lon" format.
 	 * @return The parsed coordinate, or nil if the format is invalid.
 	 */
-	static func getCLLocationCoordinate(_ coordinates: String) -> CLLocationCoordinate2D? {
+	public static func getCLLocationCoordinate(_ coordinates: String) -> CLLocationCoordinate2D? {
 		if (coordinates == "") {
 			return nil;
 		}
@@ -44,7 +44,7 @@ class Location {
 	 * @param placemark The placemark to format.
 	 * @return A formatted multi-line address string, or nil.
 	 */
-	static func getFormattedAddress(_ placemark: CLPlacemark) -> String? {
+	public static func getFormattedAddress(_ placemark: CLPlacemark) -> String? {
 		let formatter = CNPostalAddressFormatter();
 		guard let postalAddress = placemark.postalAddress else {
 			return nil;

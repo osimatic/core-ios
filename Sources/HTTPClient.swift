@@ -4,7 +4,7 @@ import Foundation
  * Utility class for performing HTTP requests with optional JWT bearer authentication
  * and automatic token refresh on 401 responses.
  */
-class HTTPClient {
+public class HTTPClient {
 
 	/*
 	 * Sends an HTTP request and delivers the response on the main thread.
@@ -19,7 +19,7 @@ class HTTPClient {
 	 * @param asJson                  If true, encodes the body as JSON instead of form-urlencoded.
 	 * @param userSession             If provided, attaches a Bearer token and handles token refresh.
 	 */
-	static func request(httpMethod: String, url: String, requestParams: [String: Any], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], asJson: Bool = false, userSession: UserSession? = nil) {
+	public static func request(httpMethod: String, url: String, requestParams: [String: Any], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], asJson: Bool = false, userSession: UserSession? = nil) {
 		var urlWithRequestParams = url;
 		if (HTTPMethod.GET == httpMethod) {
 			urlWithRequestParams += "?"+URLQueryString.getQueryStringFromArray(requestParams);
@@ -100,7 +100,7 @@ class HTTPClient {
 	 * @param addditionalHttpHeaders Extra headers to include in the request.
 	 * @param userSession            If provided, attaches a Bearer token.
 	 */
-	static func downloadFile(httpMethod: String, url: String, requestParams: [String: Any], fileName: String, onSuccess: @escaping(HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], userSession: UserSession? = nil) {
+	public static func downloadFile(httpMethod: String, url: String, requestParams: [String: Any], fileName: String, onSuccess: @escaping(HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], userSession: UserSession? = nil) {
 		DispatchQueue.global(qos: .userInitiated).async {
 			var urlWithRequestParams = url;
 			if (HTTPMethod.GET == httpMethod) {
@@ -171,7 +171,7 @@ class HTTPClient {
 	 * @param asJson                 If true, sets Content-Type to application/json.
 	 * @return A dictionary of HTTP header key-value pairs.
 	 */
-	static func getHttpHeaders(httpMethod: String, addditionalHttpHeaders: [String: String] = [:], accessToken: String? = nil, asJson: Bool = false) -> [String: String] {
+	public static func getHttpHeaders(httpMethod: String, addditionalHttpHeaders: [String: String] = [:], accessToken: String? = nil, asJson: Bool = false) -> [String: String] {
 		var httpHeaders = [
 			"Accept-Language": Locale.current.identifier
 		];
@@ -206,7 +206,7 @@ class HTTPClient {
 	 * @param userSession The session holding the refresh token and receiving the new tokens.
 	 * @param onSuccess   Called after the token has been refreshed successfully.
 	 */
-	static func refreshToken(userSession: UserSession, onSuccess: @escaping () -> Void = {}) -> Void {
+	public static func refreshToken(userSession: UserSession, onSuccess: @escaping () -> Void = {}) -> Void {
 		listCompleteCallbackAfterRefreshTokenStarted.append(onSuccess);
 
 		if (refreshTokenStarted) {
@@ -267,7 +267,7 @@ class HTTPClient {
 	 * @param responseCode The HTTP status code.
 	 * @param data         The raw response body.
 	 */
-	static func isExpiredToken(_ responseCode: Int, _ data: Data?) -> Bool {
+	public static func isExpiredToken(_ responseCode: Int, _ data: Data?) -> Bool {
 		guard let data = data, responseCode == 401 else {
 			return false;
 		}
@@ -295,7 +295,7 @@ class HTTPClient {
 	 * @param responseCode The HTTP status code.
 	 * @param data         The raw response body.
 	 */
-	static func isInvalidToken(_ responseCode: Int, _ data: Data?) -> Bool {
+	public static func isInvalidToken(_ responseCode: Int, _ data: Data?) -> Bool {
 		guard let data = data, responseCode == 401 else {
 			return false;
 		}
@@ -315,24 +315,24 @@ class HTTPClient {
 	}
 
 	/* Logs a successful HTTP response. */
-	static func logSuccess(_ url: String, _ responseCode: Int, _ json: Any? = nil) -> Void {
+	public static func logSuccess(_ url: String, _ responseCode: Int, _ json: Any? = nil) -> Void {
 		NSLog("Success %@ : status code ok (%d)", url, responseCode);
 		print(json ?? "<json nil>");
 	}
 
 	/* Logs an error caused by nil data or an unexpected status code. */
-	static func logErrorDataNil(_ url: String, _ responseCode: Int) -> Void {
+	public static func logErrorDataNil(_ url: String, _ responseCode: Int) -> Void {
 		NSLog("Error %@ : data null or status code not ok (%d)", url, responseCode);
 	}
 
 	/* Logs an error response that includes a JSON body. */
-	static func logErrorWithData(_ url: String, _ responseCode: Int, _ json: Any) -> Void {
+	public static func logErrorWithData(_ url: String, _ responseCode: Int, _ json: Any) -> Void {
 		NSLog("Error %@ : status code not ok (%d)", url, responseCode);
 		print(json);
 	}
 
 	/* Logs a JSON decoding error. */
-	static func logErrorDecodingData(_ url: String, _ error: Error? = nil) -> Void {
+	public static func logErrorDecodingData(_ url: String, _ error: Error? = nil) -> Void {
 		if let error = error {
 			NSLog("Error %@ : decoding data exception with message %@", url, error.localizedDescription);
 			return;

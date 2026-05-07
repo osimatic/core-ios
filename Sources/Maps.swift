@@ -4,7 +4,7 @@ import MapKit
 /*
  * Utility class for MapKit helpers: opening Maps, building regions and annotations.
  */
-class Maps {
+public class Maps {
 
 	/*
 	 * Opens the Maps app centered on the given coordinates.
@@ -12,7 +12,7 @@ class Maps {
 	 * @param coordinates A "lat,lon" string.
 	 * @param placeName   Optional label displayed on the map pin.
 	 */
-	static func openMap(_ coordinates: String, placeName: String? = nil) {
+	public static func openMap(_ coordinates: String, placeName: String? = nil) {
 		let coordinatesData = coordinates.components(separatedBy:",");
 		let coordinates = CLLocationCoordinate2DMake(Double(coordinatesData[0]) ?? 0, Double(coordinatesData[1]) ?? 0);
 		let regionSpan = MKCoordinateRegion(center: coordinates, latitudinalMeters: 1000, longitudinalMeters: 1000);
@@ -28,7 +28,7 @@ class Maps {
 	 *
 	 * @param coordinates A "lat,lon" string.
 	 */
-	static func getMapRegion(coordinates: String) -> MKCoordinateRegion? {
+	public static func getMapRegion(coordinates: String) -> MKCoordinateRegion? {
 		guard let coord = Location.getCLLocationCoordinate(coordinates) else {
 			return nil
 		};
@@ -43,7 +43,7 @@ class Maps {
 	 * @param coordinates A "lat,lon" string.
 	 * @param title       Optional annotation title.
 	 */
-	static func getMapAnnotation(coordinates: String, title: String?=nil) -> MKPointAnnotation? {
+	public static func getMapAnnotation(coordinates: String, title: String?=nil) -> MKPointAnnotation? {
 		guard let coord = Location.getCLLocationCoordinate(coordinates) else {
 			return nil
 		};
@@ -60,7 +60,7 @@ class Maps {
 	 * @param mapView     The map view to update.
 	 * @param coordinates A "lat,lon" string.
 	 */
-	static func setRegion(mapView: MKMapView, coordinates: String) -> Void {
+	public static func setRegion(mapView: MKMapView, coordinates: String) -> Void {
 		guard let region = self.getMapRegion(coordinates: coordinates) else {
 			return;
 		}
@@ -75,7 +75,7 @@ class Maps {
 	 * @param coordinates A "lat,lon" string.
 	 * @param title       Optional annotation title.
 	 */
-	static func addAnnotation(mapView: MKMapView, coordinates: String, title: String?=nil) -> Void {
+	public static func addAnnotation(mapView: MKMapView, coordinates: String, title: String?=nil) -> Void {
 		guard let annotation = self.getMapAnnotation(coordinates: coordinates, title: title) else {
 			return;
 		}

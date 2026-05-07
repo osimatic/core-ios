@@ -3,7 +3,7 @@ import Foundation
 /*
  * Constants for common HTTP response status codes.
  */
-class HTTPResponseStatus {
+public class HTTPResponseStatus {
 	public static var OK = 200;
 	public static var CREATED = 201;
 	public static var ACCEPTED = 202;

@@ -4,7 +4,7 @@ import UIKit
 /*
  * Extension on UIImage providing resizing, compression and JPEG helpers.
  */
-extension UIImage {
+public extension UIImage {
 
 	/*
 	 * Returns a copy of the image scaled by the given percentage.
@@ -13,7 +13,7 @@ extension UIImage {
 	 * @param isOpaque   If true, the rendered image is treated as opaque (default: true).
 	 * @return The scaled image, or nil if rendering fails.
 	 */
-	func resized(withPercentage percentage: CGFloat, isOpaque: Bool = true) -> UIImage? {
+	public func resized(withPercentage percentage: CGFloat, isOpaque: Bool = true) -> UIImage? {
 		let canvas = CGSize(width: size.width * percentage, height: size.height * percentage)
 		let format = imageRendererFormat
 		format.opaque = isOpaque
@@ -31,7 +31,7 @@ extension UIImage {
 	 * @param allowedMargin Fractional tolerance above the target (default: 0.2 = 20%).
 	 * @return JPEG data at or below the target size, or empty Data if compression failed.
 	 */
-	func compress(to kb: Int, allowedMargin: CGFloat = 0.2) -> Data {
+	public func compress(to kb: Int, allowedMargin: CGFloat = 0.2) -> Data {
 		let bytes = kb * 1024
 		var compression: CGFloat = 1.0
 		let step: CGFloat = 0.05
@@ -58,7 +58,7 @@ extension UIImage {
 	/*
 	 * JPEG quality presets.
 	 */
-	enum JPEGQuality: CGFloat {
+	public enum JPEGQuality: CGFloat {
 		case lowest  = 0
 		case low     = 0.25
 		case medium  = 0.5
@@ -72,7 +72,7 @@ extension UIImage {
 	 *
 	 * @param quality The desired JPEG quality preset.
 	 */
-	func jpeg(_ quality: JPEGQuality) -> Data? {
+	public func jpeg(_ quality: JPEGQuality) -> Data? {
 		return self.jpegData(compressionQuality: quality.rawValue);
 	}
 }
@@ -80,7 +80,7 @@ extension UIImage {
 /*
  * Utility class for converting UIImage instances to text attachments or Base64 strings.
  */
-class Image {
+public class Image {
 
 	/*
 	 * Wraps a UIImage in an NSTextAttachment sized for inline display in attributed text.
@@ -90,7 +90,7 @@ class Image {
 	 * @param height The attachment height in points (default: 18).
 	 * @return A configured NSTextAttachment.
 	 */
-	static func toTextAttachment(_ img: UIImage, width: CGFloat? = 18, height: CGFloat? = 18) -> NSTextAttachment {
+	public static func toTextAttachment(_ img: UIImage, width: CGFloat? = 18, height: CGFloat? = 18) -> NSTextAttachment {
 		let imageAttachment = NSTextAttachment();
 		imageAttachment.image = img;
 		let imageOffsetY: CGFloat = -5.0;
@@ -103,7 +103,7 @@ class Image {
 	 *
 	 * @param img The image to encode.
 	 */
-	static func convertImageToBase64String(_ img: UIImage) -> String {
+	public static func convertImageToBase64String(_ img: UIImage) -> String {
 		return img.jpegData(compressionQuality: 1)?.base64EncodedString() ?? "";
 	}
 	

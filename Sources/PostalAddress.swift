@@ -4,18 +4,18 @@ import Foundation
  * Model representing a postal address with optional street, additional address line,
  * postal code, city, and country code.
  */
-class PostalAddress {
-	var street: String?;
-	var additionalAddress: String?;
-	var postCode: String?;
-	var city: String?;
-	var countryCode: String?;
+public class PostalAddress {
+	public var street: String?;
+	public var additionalAddress: String?;
+	public var postCode: String?;
+	public var city: String?;
+	public var countryCode: String?;
 
 	/*
 	 * Initializes a PostalAddress.
 	 * countryCode defaults to "FR" if nil is provided.
 	 */
-	init (street: String?, additionalAddress: String?, postCode: String?, city: String?, countryCode: String?) {
+	public init (street: String?, additionalAddress: String?, postCode: String?, city: String?, countryCode: String?) {
 		self.street = street;
 		self.additionalAddress = additionalAddress;
 		self.postCode = postCode;
@@ -26,7 +26,7 @@ class PostalAddress {
 	/*
 	 * Returns true if all address fields (street, additionalAddress, postCode, city) are nil.
 	 */
-	func isEmpty() -> Bool {
+	public func isEmpty() -> Bool {
 		return !(false
 			|| nil != self.street
 			|| nil != self.additionalAddress
@@ -36,7 +36,7 @@ class PostalAddress {
 	}
 
 	/* Returns a formatted string representation of this address. */
-	func format(upperCase: Bool = true, separator: String? = nil) -> String {
+	public func format(upperCase: Bool = true, separator: String? = nil) -> String {
 		return PostalAddress.format(self, upperCase: upperCase, separator: separator);
 	}
 
@@ -49,7 +49,7 @@ class PostalAddress {
 	 * @param separator     The line separator (default: newline).
 	 * @return A formatted address string.
 	 */
-	static func format(_ postalAddress: PostalAddress, upperCase: Bool = true, separator: String? = nil) -> String {
+	public static func format(_ postalAddress: PostalAddress, upperCase: Bool = true, separator: String? = nil) -> String {
 		let separator = separator ?? "\n";
 
 		var addressDisplay = "";

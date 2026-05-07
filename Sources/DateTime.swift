@@ -3,7 +3,7 @@ import Foundation
 /*
  * Extension on Date providing convenience accessors and formatting helpers.
  */
-extension Date {
+public extension Date {
 
 	/*
 	 * Returns true if this date represents the same calendar day as the given date.
@@ -71,7 +71,7 @@ extension Date {
 /*
  * Utility class for date manipulation and parsing.
  */
-class DateTime {
+public class DateTime {
 
 	// ------------------------------------------------------------
 	// General helpers
@@ -85,7 +85,7 @@ class DateTime {
 	 *                         maps to Monday, 2 to Tuesday, etc. (ISO week order).
 	 * @param dependingOnLocale If true, the index is relative to the locale's first weekday.
 	 */
-	static func getWeekdayNameFromWeekdayNumber(_ weekdayNumber: Int, dependingOnLocale: Bool = true) -> String {
+	public static func getWeekdayNameFromWeekdayNumber(_ weekdayNumber: Int, dependingOnLocale: Bool = true) -> String {
 		let calendar = Calendar.current;
 
 		// Fetch the days of the week in words for the current language (Sunday to Saturday)
@@ -111,7 +111,7 @@ class DateTime {
 	 * Returns a Date built from the given year, month and day components.
 	 * Falls back to the current date if the components are invalid.
 	 */
-	static func getDateFrom(year: Int, month: Int, day: Int) -> Date {
+	public static func getDateFrom(year: Int, month: Int, day: Int) -> Date {
 		var components = DateComponents();
 		components.year = year;
 		components.month = month;
@@ -120,24 +120,24 @@ class DateTime {
 	}
 
 	/* Returns a new date by adding the given number of days. */
-	static func addDays(_ date: Date, _ nbDays: Int) -> Date {
+	public static func addDays(_ date: Date, _ nbDays: Int) -> Date {
 		return Calendar.current.date(byAdding: .day, value: nbDays, to: date)!;
 	}
 	/* Returns a new date by adding the given number of months. */
-	static func addMonths(_ date: Date, _ nbMonths: Int) -> Date {
+	public static func addMonths(_ date: Date, _ nbMonths: Int) -> Date {
 		return Calendar.current.date(byAdding: .month, value: nbMonths, to: date)!;
 	}
 	/* Returns a new date by adding the given number of years. */
-	static func addYears(_ date: Date, _ nbYears: Int) -> Date {
+	public static func addYears(_ date: Date, _ nbYears: Int) -> Date {
 		return Calendar.current.date(byAdding: .year, value: nbYears, to: date)!;
 	}
 
 	/* Returns the first day of the given month. */
-	static func getFirstDayOfMonth(year: Int, month: Int) -> Date {
+	public static func getFirstDayOfMonth(year: Int, month: Int) -> Date {
 		return Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Calendar.current.startOfDay(for: self.getDateFrom(year: year, month: month, day: 1))))!;
 	}
 	/* Returns the last day of the given month. */
-	static func getLastDayOfMonth(year: Int, month: Int) -> Date {
+	public static func getLastDayOfMonth(year: Int, month: Int) -> Date {
 		return Calendar.current.date(byAdding: DateComponents(month: 1, day: -1), to: getFirstDayOfMonth(year: year, month: month))!;
 	}
 
@@ -149,7 +149,7 @@ class DateTime {
 	 * Parses a SQL datetime string ("yyyy-MM-dd HH:mm:ss", UTC) into a Date.
 	 * Returns nil if the string does not match the expected format.
 	 */
-	static func parseFromSqlDateTime(_ sqlDateTime: String) -> Date? {
+	public static func parseFromSqlDateTime(_ sqlDateTime: String) -> Date? {
 		let df = DateFormatter();
 		df.timeZone = TimeZone(abbreviation: "UTC");
 		df.dateFormat = "yyyy-MM-dd HH:mm:ss";
@@ -160,38 +160,38 @@ class DateTime {
 /*
  * Utility class for converting Unix timestamps to dates and formatted strings.
  */
-class Timestamp {
+public class Timestamp {
 
 	/*
 	 * Returns a Date from a Unix timestamp (seconds since 1970-01-01).
 	 */
-	static func getNSDate(_ timestamp: Double) -> Date {
+	public static func getNSDate(_ timestamp: Double) -> Date {
 		return Date(timeIntervalSince1970: timestamp);
 	}
 
 	/* Returns the SQL date string ("yyyy-MM-dd") for a given timestamp. */
-	static func getSqlDate(_ timestamp: Double) -> String {
+	public static func getSqlDate(_ timestamp: Double) -> String {
 		return Timestamp.getNSDate(timestamp).getSqlDate();
 	}
 	/* Returns the SQL time string ("HH:mm:ss") for a given timestamp. */
-	static func getSqlTime(_ timestamp: Double) -> String {
+	public static func getSqlTime(_ timestamp: Double) -> String {
 		return Timestamp.getNSDate(timestamp).getSqlTime();
 	}
 	/* Returns the SQL datetime string ("yyyy-MM-dd HH:mm:ss") for a given timestamp. */
-	static func getSqlDateTime(_ timestamp: Double) -> String {
+	public static func getSqlDateTime(_ timestamp: Double) -> String {
 		return Timestamp.getNSDate(timestamp).getSqlDateTime();
 	}
 
 	/* Returns the display date string ("dd/MM/yyyy") for a given timestamp. */
-	static func formatDate(_ timestamp: Double) -> String {
+	public static func formatDate(_ timestamp: Double) -> String {
 		return Timestamp.getNSDate(timestamp).formatDate();
 	}
 	/* Returns the display time string ("HH:mm") for a given timestamp. */
-	static func formatTime(_ timestamp: Double) -> String {
+	public static func formatTime(_ timestamp: Double) -> String {
 		return Timestamp.getNSDate(timestamp).formatTime();
 	}
 	/* Returns the localized date-time display string for a given timestamp. */
-	static func formatDateTime(_ timestamp: Double) -> String {
+	public static func formatDateTime(_ timestamp: Double) -> String {
 		return Timestamp.getNSDate(timestamp).formatDateTime();
 	}
 }
@@ -199,17 +199,17 @@ class Timestamp {
 /*
  * Utility class for formatting and computing date periods.
  */
-class DatePeriod {
+public class DatePeriod {
 
 	/* Returns a localized display string for a date range. */
-	static func format(_ startDate: Date, _ endDate: Date) -> String {
+	public static func format(_ startDate: Date, _ endDate: Date) -> String {
 		return String(format: String.localize("periodDisplay"), startDate.formatDate(), endDate.formatDate());
 	}
 
 	/*
 	 * Returns the number of calendar days between two dates, inclusive of both endpoints.
 	 */
-	static func getNbDays(_ from: Date, and to: Date) -> Int {
+	public static func getNbDays(_ from: Date, and to: Date) -> Int {
 		let c = Calendar.current;
 		let fromDate = c.startOfDay(for: from)
 		let toDate = c.startOfDay(for: to)

@@ -4,7 +4,7 @@ import UIKit
 /*
  * Extension on String providing localization, attributed string, and URL-encoding helpers.
  */
-extension String {
+public extension String {
 
 	/*
 	 * Returns the localized string for the given key using the main bundle.
@@ -72,7 +72,7 @@ extension String {
 /*
  * Utility class for creating and applying fonts to HTML-sourced attributed strings.
  */
-class HTMLAttributedString {
+public class HTMLAttributedString {
 
 	/*
 	 * Creates an NSAttributedString from an HTML string with optional font and alignment.
@@ -81,7 +81,7 @@ class HTMLAttributedString {
 	 * @param font          Optional font to apply.
 	 * @param textAlignment Optional paragraph text alignment.
 	 */
-	static func fromHtml(_ str: String, font: UIFont? = nil, textAlignment: NSTextAlignment? = nil) -> NSAttributedString {
+	public static func fromHtml(_ str: String, font: UIFont? = nil, textAlignment: NSTextAlignment? = nil) -> NSAttributedString {
 		return str.toHtmlAttributedString(font: font, textAlignment: textAlignment);
 	}
 
@@ -91,7 +91,7 @@ class HTMLAttributedString {
 	 * @param str  The source attributed string.
 	 * @param font The font to apply. If nil, the original string is returned unchanged.
 	 */
-	static func setFont(_ str: NSAttributedString, font: UIFont?) -> NSAttributedString {
+	public static func setFont(_ str: NSAttributedString, font: UIFont?) -> NSAttributedString {
 		NSLog("setFont");
 		guard let font = font else {
 			NSLog("no font");

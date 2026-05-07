@@ -3,7 +3,7 @@ import Foundation
 /*
  * Extension on URL for reading individual query parameter values.
  */
-extension URL {
+public extension URL {
 
 	/*
 	 * Returns the value of the named query parameter, or nil if not present.
@@ -19,7 +19,7 @@ extension URL {
 /*
  * Extension on URLComponents for reading individual query parameter values.
  */
-extension URLComponents {
+public extension URLComponents {
 
 	/*
 	 * Returns the value of the first query item matching the given name, or nil if not found.
@@ -34,15 +34,15 @@ extension URLComponents {
 /*
  * Utility class for building URL query strings from dictionaries.
  */
-class URLQueryString {
-	var queryString: String;
+public class URLQueryString {
+	public var queryString: String;
 
 	/* Initializes the query string directly from a raw string. */
-	init(_ queryString: String) {
+	public init(_ queryString: String) {
 		self.queryString = queryString;
 	}
 	/* Initializes the query string by encoding a key-value dictionary. */
-	init(array: [String: Any]) {
+	public init(array: [String: Any]) {
 		self.queryString = URLQueryString.getQueryStringFromArray(array);
 	}
 
@@ -53,7 +53,7 @@ class URLQueryString {
 	 * @param queryArray The key-value pairs to encode.
 	 * @return A "&"-separated query string (e.g. "key1=val1&key2=val2").
 	 */
-	static func getQueryStringFromArray(_ queryArray: [String: Any]) -> String {
+	public static func getQueryStringFromArray(_ queryArray: [String: Any]) -> String {
 		var parts: [String] = [];
 		for (key, value) in queryArray {
 			let stringValue = (value as? String) ?? "\(value)";

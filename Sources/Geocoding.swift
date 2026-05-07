@@ -4,7 +4,7 @@ import CoreLocation
 /*
  * Utility class for forward and reverse geocoding using CLGeocoder.
  */
-class Geocoding {
+public class Geocoding {
 
 	/*
 	 * Converts a human-readable address string into a CLLocation (forward geocoding).
@@ -13,7 +13,7 @@ class Geocoding {
 	 * @param onSuccess Called with the resolved CLLocation on success.
 	 * @param onError   Called with an error if geocoding fails or no location is found.
 	 */
-	static func forwardGeocoding(_ address: String, onSuccess: @escaping(CLLocation) -> Void, onError: @escaping(Error?) -> Void) {
+	public static func forwardGeocoding(_ address: String, onSuccess: @escaping(CLLocation) -> Void, onError: @escaping(Error?) -> Void) {
 		let geocoder = CLGeocoder()
 		geocoder.geocodeAddressString(address, completionHandler: { (placemarks, error) in
 			if error != nil {
@@ -40,7 +40,7 @@ class Geocoding {
 	 * @param onSuccess Called with the resolved CLPlacemark on success.
 	 * @param onError   Called with an error if geocoding fails or no address is found.
 	 */
-	static func reverseGeocoding(_ location: CLLocation, onSuccess: @escaping(CLPlacemark) -> Void, onError: @escaping(Error?) -> Void) {
+	public static func reverseGeocoding(_ location: CLLocation, onSuccess: @escaping(CLPlacemark) -> Void, onError: @escaping(Error?) -> Void) {
 		self.reverseGeocoding(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude, onSuccess: onSuccess, onError: onError);
 	}
 
@@ -52,7 +52,7 @@ class Geocoding {
 	 * @param onSuccess Called with the resolved CLPlacemark on success.
 	 * @param onError   Called with an error if geocoding fails or no address is found.
 	 */
-	static func reverseGeocoding(latitude: CLLocationDegrees, longitude: CLLocationDegrees, onSuccess: @escaping(CLPlacemark) -> Void, onError: @escaping(Error?) -> Void) {
+	public static func reverseGeocoding(latitude: CLLocationDegrees, longitude: CLLocationDegrees, onSuccess: @escaping(CLPlacemark) -> Void, onError: @escaping(Error?) -> Void) {
 		let geocoder = CLGeocoder();
 		let location = CLLocation(latitude: latitude, longitude: longitude)
 		geocoder.reverseGeocodeLocation(location, completionHandler: {(placemarks, error) -> Void in

@@ -7,7 +7,7 @@ import UIKit
  * @param delay   The delay in seconds before executing the closure.
  * @param closure The block to execute after the delay.
  */
-func delay(_ delay:Double, closure:@escaping ()->()) {
+public func delay(_ delay:Double, closure:@escaping ()->()) {
 	let when = DispatchTime.now() + delay;
 	DispatchQueue.main.asyncAfter(deadline: when, execute: closure);
 }

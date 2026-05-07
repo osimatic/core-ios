@@ -3,7 +3,7 @@ import Foundation
 /*
  * Utility class for file size formatting and file download helpers.
  */
-class File {
+public class File {
 
 	/*
 	 * Formats a file size in bytes into a human-readable string (B, KB, MB, GB, TB).
@@ -11,7 +11,7 @@ class File {
 	 * @param size The file size in bytes.
 	 * @return A formatted string with the appropriate unit.
 	 */
-	static func formatFileSize(_ size: Int) -> String {
+	public static func formatFileSize(_ size: Int) -> String {
 		if (size <= 0) {
 			return "0";
 		}
@@ -33,7 +33,7 @@ class File {
 	 * @param url        The remote URL of the file to download.
 	 * @param onComplete Called with the local file path and an optional error.
 	 */
-	static func loadFileSync(url: String, onComplete:(_ path: String, _ error: Error?) -> Void) {
+	public static func loadFileSync(url: String, onComplete:(_ path: String, _ error: Error?) -> Void) {
 		let urlObj = URL(string: url)!;
 
 		let documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!;
@@ -69,7 +69,7 @@ class File {
 	 * @param url        The remote URL of the file to download.
 	 * @param onComplete Called on the calling queue with the local file path and an optional error.
 	 */
-	static func loadFileAsync(url: String, onComplete: @escaping (_ path: String, _ error: Error?) -> Void) {
+	public static func loadFileAsync(url: String, onComplete: @escaping (_ path: String, _ error: Error?) -> Void) {
 		let urlObj = URL(string: url)!;
 
 		let documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!;

@@ -3,7 +3,7 @@ import Foundation
 /*
  * Utility class for parsing server-side form validation error responses.
  */
-class Form {
+public class Form {
 
 	/*
 	 * Extracts a human-readable error message from a JSON error value.
@@ -12,7 +12,7 @@ class Form {
 	 * @param json The raw JSON value returned by the server for a field error.
 	 * @return The error message string, or nil if none can be extracted.
 	 */
-	static func getErrorMessage(_ json: Any) -> String? {
+	public static func getErrorMessage(_ json: Any) -> String? {
 		if let json = json as? String {
 			return json;
 		}
@@ -34,7 +34,7 @@ class Form {
 	 * @param json The raw JSON value returned by the server for a field error.
 	 * @return The error key string, or nil if none can be extracted.
 	 */
-	static func getErrorKey(_ json: Any) -> String? {
+	public static func getErrorKey(_ json: Any) -> String? {
 		if let json = json as? [String] {
 			return json[0];
 		}
@@ -49,7 +49,7 @@ class Form {
 	 * Returns the first object containing an "error" key from the given JSON value.
 	 * Handles both single-object and single-element-array forms.
 	 */
-	static func getErrorJsonObject(_ json: Any) -> Any? {
+	public static func getErrorJsonObject(_ json: Any) -> Any? {
 		if let json = json as? [String: Any], let _ = json["error"] {
 			return json;
 		}
@@ -70,7 +70,7 @@ class Form {
 	 * @param defaultErrorMessage Fallback message used when the parsed list is empty.
 	 * @return An array of non-empty error message strings.
 	 */
-	static func getListErrors(_ jsonErrors: Any, _ defaultErrorMessage: String? = nil) -> [String] {
+	public static func getListErrors(_ jsonErrors: Any, _ defaultErrorMessage: String? = nil) -> [String] {
 		var errorMessages: [String?] = [];
 
 		if let jsonErrors = jsonErrors as? [String: Any] {
@@ -98,7 +98,7 @@ class Form {
 	/*
 	 * Joins an array of error messages into a single newline-separated string.
 	 */
-	static func getErrorMessages(_ errorMessages: [String]) -> String {
+	public static func getErrorMessages(_ errorMessages: [String]) -> String {
 		return errorMessages.joined(separator: "\n");
 	}
 
@@ -108,7 +108,7 @@ class Form {
 	 * @param jsonErrors    The server error payload as a [String: Any] dictionary.
 	 * @param formErrorKeys The list of field keys to look for.
 	 */
-	static func isFormError(_ jsonErrors: [String: Any], _ formErrorKeys: [String] = []) -> Bool {
+	public static func isFormError(_ jsonErrors: [String: Any], _ formErrorKeys: [String] = []) -> Bool {
 		for (fieldName, _) in jsonErrors {
 			if (formErrorKeys.contains(fieldName)) {
 				return true;
@@ -116,7 +116,7 @@ class Form {
 		}
 		return false;
 	}
-	static func isFormError(_ jsonErrors: [[String]], _ formErrorKeys: [String] = []) -> Bool {
+	public static func isFormError(_ jsonErrors: [[String]], _ formErrorKeys: [String] = []) -> Bool {
 		for jsonError in jsonErrors {
 			if let errorKey = getErrorKey(jsonError), formErrorKeys.contains(errorKey) {
 				return true;
@@ -124,7 +124,7 @@ class Form {
 		}
 		return false;
 	}
-	static func isFormError(_ jsonErrors: [[String: Any]], _ formErrorKeys: [String] = []) -> Bool {
+	public static func isFormError(_ jsonErrors: [[String: Any]], _ formErrorKeys: [String] = []) -> Bool {
 		for jsonError in jsonErrors {
 			if let errorKey = getErrorKey(jsonError), formErrorKeys.contains(errorKey) {
 				return true;

@@ -5,14 +5,14 @@ import SystemConfiguration
  * Helper class for checking network connectivity using the SystemConfiguration framework.
  * Works for both Wi-Fi and cellular connections.
  */
-class Reachability {
+public class Reachability {
 
 	/*
 	 * Returns true if the device currently has a usable network connection
 	 * (Wi-Fi or cellular). Returns false if the reachability object could not
 	 * be created or if no connection is available.
 	 */
-	func isConnectedToNetwork() -> Bool {
+	public func isConnectedToNetwork() -> Bool {
 		var zeroAddress = sockaddr_in(sin_len: 0, sin_family: 0, sin_port: 0, sin_addr: in_addr(s_addr: 0), sin_zero: (0, 0, 0, 0, 0, 0, 0, 0))
 		zeroAddress.sin_len = UInt8(MemoryLayout.size(ofValue: zeroAddress))
 		zeroAddress.sin_family = sa_family_t(AF_INET)

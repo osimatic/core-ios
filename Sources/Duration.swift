@@ -3,20 +3,20 @@ import Foundation
 /*
  * Utility class for formatting durations expressed in days, hours, or seconds.
  */
-class Duration {
+public class Duration {
 
 	// ------------------------------------------------------------
 	// Helpers for durations expressed in days
 	// ------------------------------------------------------------
 
 	/* Formats a number of days as a signed or unsigned decimal string. */
-	static func formatNbDays(_ nbDays: Int, withSign: Bool = false) -> String {
+	public static func formatNbDays(_ nbDays: Int, withSign: Bool = false) -> String {
 		return Duration.formatNbDays(Float(nbDays), withSign: withSign);
 	}
-	static func formatNbDays(_ nbDays: Double, withSign: Bool = false) -> String {
+	public static func formatNbDays(_ nbDays: Double, withSign: Bool = false) -> String {
 		return Duration.formatNbDays(Float(nbDays), withSign: withSign);
 	}
-	static func formatNbDays(_ nbDays: Float, withSign: Bool = false) -> String {
+	public static func formatNbDays(_ nbDays: Float, withSign: Bool = false) -> String {
 		return String(format: "%@ %.02f", (nbDays>=0 ? (withSign ? "+" : "") : "-"), Float(abs(nbDays)));
 	}
 
@@ -30,13 +30,13 @@ class Duration {
 	 * @param nbSeconds The total duration in seconds.
 	 * @param withSign  If true, prepends "+" for positive values.
 	 */
-	static func formatNbHours(_ nbSeconds: Double, withSign: Bool = false) -> String {
+	public static func formatNbHours(_ nbSeconds: Double, withSign: Bool = false) -> String {
 		return Duration.formatNbHours(Int(nbSeconds), withSign: withSign);
 	}
-	static func formatNbHours(_ nbSeconds: Float, withSign: Bool = false) -> String {
+	public static func formatNbHours(_ nbSeconds: Float, withSign: Bool = false) -> String {
 		return Duration.formatNbHours(Int(nbSeconds), withSign: withSign);
 	}
-	static func formatNbHours(_ nbSeconds: Int, withSign: Bool = false) -> String {
+	public static func formatNbHours(_ nbSeconds: Int, withSign: Bool = false) -> String {
 		return String(format: "%@ %@", (nbSeconds>=0 ? (withSign ? "+" : "") : "-"), Duration.formatNbSeconds(nbSeconds));
 	}
 
@@ -47,33 +47,33 @@ class Duration {
 	/*
 	 * Formats a duration in seconds as "HH:mm.ss".
 	 */
-	static func formatNbSeconds(_ nbSeconds: Double) -> String {
+	public static func formatNbSeconds(_ nbSeconds: Double) -> String {
 		return Duration.formatNbSeconds(Int(nbSeconds), withSeconds: true, withHours: true);
 	}
-	static func formatNbSeconds(_ nbSeconds: Float) -> String {
+	public static func formatNbSeconds(_ nbSeconds: Float) -> String {
 		return Duration.formatNbSeconds(Int(nbSeconds), withSeconds: true, withHours: true);
 	}
-	static func formatNbSeconds(_ nbSeconds: Int) -> String {
+	public static func formatNbSeconds(_ nbSeconds: Int) -> String {
 		return Duration.formatNbSeconds(nbSeconds, withSeconds: true, withHours: true);
 	}
 
-	static func formatNbSeconds(_ nbSeconds: Double, withHours: Bool) -> String {
+	public static func formatNbSeconds(_ nbSeconds: Double, withHours: Bool) -> String {
 		return Duration.formatNbSeconds(Int(nbSeconds), withSeconds: true, withHours: withHours);
 	}
-	static func formatNbSeconds(_ nbSeconds: Float, withHours: Bool) -> String {
+	public static func formatNbSeconds(_ nbSeconds: Float, withHours: Bool) -> String {
 		return Duration.formatNbSeconds(Int(nbSeconds), withSeconds: true, withHours: withHours);
 	}
-	static func formatNbSeconds(_ nbSeconds: Int, withHours: Bool) -> String {
+	public static func formatNbSeconds(_ nbSeconds: Int, withHours: Bool) -> String {
 		return Duration.formatNbSeconds(nbSeconds, withSeconds: true, withHours: withHours);
 	}
 
-	static func formatNbSeconds(_ nbSeconds: Double, withSeconds: Bool) -> String {
+	public static func formatNbSeconds(_ nbSeconds: Double, withSeconds: Bool) -> String {
 		return Duration.formatNbSeconds(Int(nbSeconds), withSeconds: withSeconds, withHours: true);
 	}
-	static func formatNbSeconds(_ nbSeconds: Float, withSeconds: Bool) -> String {
+	public static func formatNbSeconds(_ nbSeconds: Float, withSeconds: Bool) -> String {
 		return Duration.formatNbSeconds(Int(nbSeconds), withSeconds: withSeconds, withHours: true);
 	}
-	static func formatNbSeconds(_ nbSeconds: Int, withSeconds: Bool) -> String {
+	public static func formatNbSeconds(_ nbSeconds: Int, withSeconds: Bool) -> String {
 		return Duration.formatNbSeconds(nbSeconds, withSeconds: withSeconds, withHours: true);
 	}
 
@@ -84,7 +84,7 @@ class Duration {
 	 * @param withSeconds If true, appends the seconds component.
 	 * @param withHours   If true, prepends the hours component.
 	 */
-	static func formatNbSeconds(_ nbSeconds: Int, withSeconds: Bool, withHours: Bool) -> String {
+	public static func formatNbSeconds(_ nbSeconds: Int, withSeconds: Bool, withHours: Bool) -> String {
 		let nbSeconds = abs(nbSeconds);
 		var str = "";
 		if (withHours) {

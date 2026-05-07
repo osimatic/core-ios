@@ -3,7 +3,7 @@ import Foundation
 /*
  * Utility class for decoding JSON Web Tokens (JWT).
  */
-class JWT {
+public class JWT {
 
 	/*
 	 * Decodes the payload (second segment) of a JWT and returns it as a dictionary.
@@ -13,7 +13,7 @@ class JWT {
 	 * @param jwt The JWT string in "header.payload.signature" format.
 	 * @return A dictionary containing the decoded JWT claims.
 	 */
-	static func parse(_ jwt: String) throws -> [String: Any] {
+	public static func parse(_ jwt: String) throws -> [String: Any] {
 
 		enum DecodeErrors: Error {
 			case badToken

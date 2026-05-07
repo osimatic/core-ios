@@ -4,7 +4,7 @@ import UIKit
 /*
  * Utility class for displaying UIAlertController-based modal alerts.
  */
-class Alert {
+public class Alert {
 
 	/*
 	 * Displays an alert with a message.
@@ -15,7 +15,7 @@ class Alert {
 	 * @param goBack         If true, pops the current view controller after dismissal.
 	 * @param hideLoader     If true, hides any active loader before showing the alert.
 	 */
-	static func display(message: String, viewController: UIViewController?, goBack: Bool = false, hideLoader: Bool = true) {
+	public static func display(message: String, viewController: UIViewController?, goBack: Bool = false, hideLoader: Bool = true) {
 		Alert.display(title: nil, message: message, viewController: viewController, onCompletion: {
 			if (goBack) {
 				NSLog("go back");
@@ -30,7 +30,7 @@ class Alert {
 	 * Displays an alert with a title and message.
 	 * Optionally pops the navigation stack after dismissal.
 	 */
-	static func display(title: String?, message: String, viewController: UIViewController?, goBack: Bool = false, hideLoader: Bool = true) {
+	public static func display(title: String?, message: String, viewController: UIViewController?, goBack: Bool = false, hideLoader: Bool = true) {
 		Alert.display(title: title, message: message, viewController: viewController, onCompletion: {
 			if (goBack) {
 				NSLog("go back");
@@ -42,10 +42,10 @@ class Alert {
 	/*
 	 * Displays an alert then performs a segue transition after the user dismisses it.
 	 */
-	static func display(message: String, identifierRedirectSegue: String?, viewController: UIViewController?, hideLoader: Bool = true) {
+	public static func display(message: String, identifierRedirectSegue: String?, viewController: UIViewController?, hideLoader: Bool = true) {
 		Alert.display(title: nil, message: message, identifierRedirectSegue: identifierRedirectSegue, viewController: viewController, hideLoader: hideLoader);
 	}
-	static func display(title: String?, message: String, identifierRedirectSegue: String?, viewController: UIViewController?, hideLoader: Bool = true) {
+	public static func display(title: String?, message: String, identifierRedirectSegue: String?, viewController: UIViewController?, hideLoader: Bool = true) {
 		Alert.display(title: title, message: message, viewController: viewController, onCompletion: {
 			if (identifierRedirectSegue != nil) {
 				NSLog("performSegue");
@@ -57,10 +57,10 @@ class Alert {
 	/*
 	 * Displays an alert then executes a completion callback after the user dismisses it.
 	 */
-	static func display(message: String, viewController: UIViewController?, onCompletion:@escaping ()->(), hideLoader: Bool = true) {
+	public static func display(message: String, viewController: UIViewController?, onCompletion:@escaping ()->(), hideLoader: Bool = true) {
 		Alert.display(title: nil, message: message, viewController: viewController, onCompletion: onCompletion, hideLoader: hideLoader);
 	}
-	static func display(title: String?, message: String, viewController: UIViewController?, onCompletion:@escaping ()->(), hideLoader: Bool = true) {
+	public static func display(title: String?, message: String, viewController: UIViewController?, onCompletion:@escaping ()->(), hideLoader: Bool = true) {
 		guard let viewController = viewController else { return; }
 
 		if (hideLoader) {
@@ -83,12 +83,12 @@ class Alert {
 /*
  * Utility class for displaying brief auto-dismissing toast-style alerts.
  */
-class Toast {
+public class Toast {
 
 	/*
 	 * Displays a toast message. Optionally pops the navigation stack after it is dismissed.
 	 */
-	static func display(message: String, viewController: UIViewController, goBack: Bool = false) {
+	public static func display(message: String, viewController: UIViewController, goBack: Bool = false) {
 		Toast.display(message: message, viewController: viewController, onCompletion: {
 			if (goBack) {
 				NSLog("goBack");
@@ -100,7 +100,7 @@ class Toast {
 	/*
 	 * Displays a toast message then performs a segue transition after it is dismissed.
 	 */
-	static func display(message: String, identifierRedirectSegue: String?, viewController: UIViewController) {
+	public static func display(message: String, identifierRedirectSegue: String?, viewController: UIViewController) {
 		Toast.display(message: message, viewController: viewController, onCompletion: {
 			if let identifierRedirectSegue = identifierRedirectSegue {
 				NSLog("performSegue");
@@ -112,7 +112,7 @@ class Toast {
 	/*
 	 * Displays a toast message for 2 seconds then executes a completion callback.
 	 */
-	static func display(message: String, viewController: UIViewController, onCompletion:@escaping ()->()) {
+	public static func display(message: String, viewController: UIViewController, onCompletion:@escaping ()->()) {
 		DispatchQueue.main.async {
 			let toast = UIAlertController(title:nil, message:message, preferredStyle:UIAlertController.Style.alert);
 			viewController.present(toast, animated: true, completion: nil);
