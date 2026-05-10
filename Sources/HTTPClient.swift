@@ -61,7 +61,7 @@ public class HTTPClient {
 		// Execution
 		DispatchQueue.global(qos: .userInitiated).async {
 			let task = URLSession.shared.dataTask(with: request, completionHandler: {data, httpResponse, error in
-				guard error == nil, let httpResponse = httpResponse else {
+				guard error == nil, let httpResponse = httpResponse as? HTTPURLResponse else {
 					NSLog("HTTP Request error: %@ ; URL: %@", error?.localizedDescription ?? "unknown error", urlObj.absoluteString);
 					DispatchQueue.main.async {
 						onError(error);
@@ -69,7 +69,6 @@ public class HTTPClient {
 					return;
 				}
 
-				let httpResponse = httpResponse as! HTTPURLResponse;
 				NSLog("HTTP status: %d ; URL: %@", httpResponse.statusCode, urlObj.absoluteString);
 
 				if sendAuthorizationHeader, isExpiredToken(httpResponse.statusCode, data) {
@@ -138,7 +137,7 @@ public class HTTPClient {
 			}
 
 			let downloadTask: URLSessionDownloadTask = URLSession.shared.downloadTask(with: request) { (tempLocalUrl, httpResponse, error) in
-				guard let tempLocalUrl = tempLocalUrl, error == nil, let httpResponse = httpResponse else {
+				guard let tempLocalUrl = tempLocalUrl, error == nil, let httpResponse = httpResponse as? HTTPURLResponse else {
 					NSLog("HTTP Request error: %@ ; URL: %@", error?.localizedDescription ?? "unknown error", urlObj.absoluteString);
 					DispatchQueue.main.async {
 						onError(error);
@@ -146,7 +145,6 @@ public class HTTPClient {
 					return;
 				}
 
-				let httpResponse = httpResponse as! HTTPURLResponse;
 				NSLog("HTTP status: %d ; URL: %@", httpResponse.statusCode, urlObj.absoluteString);
 
 				if sendAuthorizationHeader, httpResponse.statusCode == 401 {

@@ -506,7 +506,7 @@ enum Position {
 	case up
 }
 
-class Arrow: UIView {
+public class Arrow: UIView {
 	let shapeLayer = CAShapeLayer()
 	var arrowColor: UIColor = .black {
 		didSet {
@@ -577,25 +577,5 @@ extension UIView {
 		layer.shadowPath = UIBezierPath(rect: bounds).cgPath
 		layer.shouldRasterize = true
 		layer.rasterizationScale = scale ? UIScreen.main.scale : 1
-	}
-
-	func viewBorder(borderColor: UIColor, borderWidth: CGFloat?) {
-		layer.borderColor = borderColor.cgColor
-		if let borderWidth_ = borderWidth {
-			layer.borderWidth = borderWidth_
-		} else {
-			layer.borderWidth = 1.0
-		}
-	}
-
-	var parentViewController: UIViewController? {
-		var parentResponder: UIResponder? = self
-		while parentResponder != nil {
-			parentResponder = parentResponder!.next
-			if let viewController = parentResponder as? UIViewController {
-				return viewController
-			}
-		}
-		return nil
 	}
 }

@@ -87,18 +87,18 @@ public class Checkbox: UIControl {
 	}
 
 	//MARK: - handle touches
-	override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+	public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
 		super.touchesEnded(touches, with: event)
 		isChecked.toggle()
 		sendActions(for: .valueChanged)
 	}
 
 	//MARK: - Increase hit area
-	override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+	public override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
 		return bounds.inset(by: UIEdgeInsets(top: -hitRadiusOffset, left: -hitRadiusOffset, bottom: -hitRadiusOffset, right: -hitRadiusOffset)).contains(point)
 	}
 
-	override func layoutSubviews() {
+	public override func layoutSubviews() {
 		super.layoutSubviews()
 		checkedView.frame = CGRect(
 			x: checkedViewInsets.left,
