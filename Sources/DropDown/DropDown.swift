@@ -541,11 +541,11 @@ public class Arrow: UIView {
 		layer.addSublayer(shapeLayer)
 	}
 
-	required init?(coder aDecoder: NSCoder) {
+	public required init?(coder aDecoder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
 	}
 
-	override func draw(_ rect: CGRect) {
+	public override func draw(_ rect: CGRect) {
 		// Get size
 		let size = layer.frame.width
 
