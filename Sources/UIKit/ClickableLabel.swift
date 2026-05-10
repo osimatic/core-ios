@@ -1,17 +1,17 @@
 import Foundation
 import UIKit
 
-class ClickableLabel: UILabel {
-	var onClick: () -> Void = {};
-	
-	func setLink(_ text: String, url: String) {
+public class ClickableLabel: UILabel {
+	public var onClick: () -> Void = {};
+
+	public func setLink(_ text: String, url: String) {
 		setLink(text, onClick: {
 			let url = URL(string: url)!;
 			UIApplication.shared.open(url);
 		});
 	}
 	
-	func setLink(_ text: String, onClick: @escaping () -> Void = {}) {
+	public func setLink(_ text: String, onClick: @escaping () -> Void = {}) {
 		let textRange = NSRange(location: 0, length: text.count);
 		let attributedText = NSMutableAttributedString(string: text);
 		attributedText.addAttribute(.foregroundColor, value: UIColor(red:0.05, green:0.4, blue:0.65, alpha:1.0), range: textRange);

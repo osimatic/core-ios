@@ -1,9 +1,9 @@
 import Foundation
 import UIKit
 
-class Checkbox: UIControl {
+public class Checkbox: UIControl {
 
-	let checkedView: UIImageView = {
+	public let checkedView: UIImageView = {
 		let view = UIImageView()
 		view.translatesAutoresizingMaskIntoConstraints = false
 		view.isHidden = true
@@ -12,62 +12,62 @@ class Checkbox: UIControl {
 		return view
 	}()
 
-	var isChecked: Bool = false {
+	public var isChecked: Bool = false {
 		didSet {
 			updateState()
 		}
 	}
 
-	var hitRadiusOffset: CGFloat = 10
+	public var hitRadiusOffset: CGFloat = 10
 
-	var checkedViewInsets: UIEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5) {
+	public var checkedViewInsets: UIEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5) {
 		didSet {
 			layoutIfNeeded()
 		}
 	}
 
-	var checkedBackgroundColor: UIColor = #colorLiteral(red: 0.1450980392, green: 0.3450980392, blue: 0.5098039216, alpha: 1) {
+	public var checkedBackgroundColor: UIColor = #colorLiteral(red: 0.1450980392, green: 0.3450980392, blue: 0.5098039216, alpha: 1) {
 		didSet {
 			backgroundColor = isChecked ? checkedBackgroundColor : uncheckedBackgroundColor
 		}
 	}
 
-	var uncheckedBackgroundColor: UIColor = .white {
+	public var uncheckedBackgroundColor: UIColor = .white {
 		didSet {
 			backgroundColor = isChecked ? checkedBackgroundColor : uncheckedBackgroundColor
 		}
 	}
 
-	var checkedImage: UIImage? = UIImage(systemName: "checkmark") {
+	public var checkedImage: UIImage? = UIImage(systemName: "checkmark") {
 		didSet {
 			checkedView.image = checkedImage?.withRenderingMode(.alwaysTemplate)
 		}
 	}
 
-	var checkedBorderColor: UIColor = .black {
+	public var checkedBorderColor: UIColor = .black {
 		didSet {
 			layer.borderColor = isChecked ? checkedBorderColor.cgColor : uncheckedBorderColor.cgColor
 		}
 	}
 
-	var uncheckedBorderColor: UIColor = .black {
+	public var uncheckedBorderColor: UIColor = .black {
 		didSet {
 			layer.borderColor = isChecked ? checkedBorderColor.cgColor : uncheckedBorderColor.cgColor
 		}
 	}
 
-	var imageTint: UIColor? = .white {
+	public var imageTint: UIColor? = .white {
 		didSet {
 			checkedView.tintColor = imageTint
 		}
 	}
 
-	override init(frame: CGRect) {
+	public override init(frame: CGRect) {
 		super.init(frame: frame)
 		setup()
 	}
 
-	required init?(coder: NSCoder) {
+	public required init?(coder: NSCoder) {
 		super.init(coder: coder)
 		setup()
 	}

@@ -2,8 +2,8 @@ import Foundation
 import MapKit
 import CoreLocation
 
-extension CLPlacemark {
-	
+public extension CLPlacemark {
+
 	var fullLocationAddress: String {
 		// MARK: Get the same address, that could be provided by Google Places API
 		// https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete

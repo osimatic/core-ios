@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
  
-extension UITextField {
+public extension UITextField {
 	func loadDropdownData(data: [String]) {
 		self.inputView = DropDownPickerView(pickerData: data, dropdownField: self)
 	}
@@ -11,12 +11,12 @@ extension UITextField {
 	}
 }
  
-class DropDownPickerView : UIPickerView, UIPickerViewDataSource, UIPickerViewDelegate {
-	var pickerData : [String]!
-	var pickerTextField : UITextField!
-	var selectionHandler : ((_ selectedText: String) -> Void)?
- 
-	init(pickerData: [String], dropdownField: UITextField) {
+public class DropDownPickerView : UIPickerView, UIPickerViewDataSource, UIPickerViewDelegate {
+	public var pickerData : [String]!
+	public var pickerTextField : UITextField!
+	public var selectionHandler : ((_ selectedText: String) -> Void)?
+
+	public init(pickerData: [String], dropdownField: UITextField) {
 		super.init(frame: CGRectZero)
  
 		self.pickerData = pickerData
@@ -40,33 +40,33 @@ class DropDownPickerView : UIPickerView, UIPickerViewDataSource, UIPickerViewDel
 		}
 	}
  
-	convenience init(pickerData: [String], dropdownField: UITextField, onSelect selectionHandler : @escaping (_ selectedText: String) -> Void) {
+	public convenience init(pickerData: [String], dropdownField: UITextField, onSelect selectionHandler : @escaping (_ selectedText: String) -> Void) {
 		self.init(pickerData: pickerData, dropdownField: dropdownField)
 		
 		self.selectionHandler = selectionHandler
 	}
  
-	required init?(coder aDecoder: NSCoder) {
+	public required init?(coder aDecoder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
 	}
  
 	// Sets number of columns in picker view
-	func numberOfComponents(in pickerView: UIPickerView) -> Int {
+	public func numberOfComponents(in pickerView: UIPickerView) -> Int {
 		return 1
 	}
 	// Sets the number of rows in the picker view
-	func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+	public func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
 		return pickerData.count
 	}
  
 	// This function sets the text of the picker view to the content of the "salutations" array
-	func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+	public func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
 		return pickerData[row]
 	}
  
 	// When user selects an option, this function will set the text of the text field to reflect
 	// the selected option.
-	func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+	public func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
 		pickerTextField.text = pickerData[row]
  
 		if let selectionHandler = selectionHandler, self.pickerTextField.text != nil {

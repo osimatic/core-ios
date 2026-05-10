@@ -4,15 +4,15 @@ import UIKit
 //https://stackoverflow.com/questions/29117759/how-to-create-radio-buttons-and-checkbox-in-swift-ios
 //https://ashokraju.medium.com/programmatic-easy-custom-radiobutton-for-ios-swift-5-9f22db12d4ab
 
-protocol UIRadioButtonDelegate {
+public protocol UIRadioButtonDelegate {
 	func onRadioButtonSelected(_ sender: UIRadioButton);
 }
 
-class UIRadioButtonGroup {
+public class UIRadioButtonGroup {
 	var buttons: [UIRadioButton] = [];
 	//var onSelect: ((UIRadioButton) -> Void)?;
 	
-	static func setGroup(_ buttons: [UIRadioButton], onSelect: ((UIRadioButton) -> Void)? = nil, defaultSelectedRadioButton: UIRadioButton? = nil) {
+	public static func setGroup(_ buttons: [UIRadioButton], onSelect: ((UIRadioButton) -> Void)? = nil, defaultSelectedRadioButton: UIRadioButton? = nil) {
 		for button in buttons {
 			button.groupBouttons = buttons;
 			button.onSelect = onSelect;
@@ -23,7 +23,7 @@ class UIRadioButtonGroup {
 		}
 	}
 	
-	init (_ buttons: [UIRadioButton], onSelect: @escaping (UIRadioButton) -> Void) {
+	public init (_ buttons: [UIRadioButton], onSelect: @escaping (UIRadioButton) -> Void) {
 		self.buttons = buttons;
 		
 		for button in self.buttons {
@@ -32,31 +32,31 @@ class UIRadioButtonGroup {
 		}
 	}
 	
-	func didSelect(_ onSelect: @escaping (UIRadioButton) -> Void) {
+	public func didSelect(_ onSelect: @escaping (UIRadioButton) -> Void) {
 		for button in self.buttons {
 			button.onSelect = onSelect;
 		}
 	}
 }
 
-class UIRadioButton: UIButton {
-	var groupBouttons: [UIRadioButton]? = nil;
-	var group: UIRadioButtonGroup?;
-	var delegate: UIRadioButtonDelegate?;
-	var onSelect: ((UIRadioButton) -> Void)?;
-	var stringTag: String?;
-	
-	convenience init(frame: CGRect, label: String, delegate: UIRadioButtonDelegate) {
+public class UIRadioButton: UIButton {
+	public var groupBouttons: [UIRadioButton]? = nil;
+	public var group: UIRadioButtonGroup?;
+	public var delegate: UIRadioButtonDelegate?;
+	public var onSelect: ((UIRadioButton) -> Void)?;
+	public var stringTag: String?;
+
+	public convenience init(frame: CGRect, label: String, delegate: UIRadioButtonDelegate) {
 		self.init(frame: frame, label: label);
 		self.delegate = delegate;
 	}
 	
-	convenience init(frame: CGRect, label: String) {
+	public convenience init(frame: CGRect, label: String) {
 		self.init(frame: frame);
 		self.setTitle(label, for: UIControl.State.normal);
 	}
 	
-	override init(frame: CGRect) {
+	public override init(frame: CGRect) {
 		super.init(frame: frame)
 		if (!self.allTargets.contains(self)) {
 			super.addTarget(self, action: #selector(onClick), for: UIControl.Event.touchUpInside);
@@ -75,7 +75,7 @@ class UIRadioButton: UIButton {
 		self.setImage(UIImage(named: "radiobutton_unchecked"), for: UIControl.State.normal);
 	}
 	
-	override func awakeFromNib() {
+	public override func awakeFromNib() {
 		super.awakeFromNib();
 
 		if (!self.allTargets.contains(self)) {
@@ -85,7 +85,7 @@ class UIRadioButton: UIButton {
 		self.initStyle();
 	}
 
-	override func addTarget(_ target: Any?, action: Selector, for controlEvents: UIControl.Event) {
+	public override func addTarget(_ target: Any?, action: Selector, for controlEvents: UIControl.Event) {
 		// 'self' should be the first target
 		if (!self.allTargets.contains(self)) {
 			super.addTarget(self, action: #selector(onClick), for: UIControl.Event.touchUpInside);
@@ -93,12 +93,12 @@ class UIRadioButton: UIButton {
 		super.addTarget(target, action:action, for:controlEvents);
 	}
 
-	required init?(coder: NSCoder) {
+	public required init?(coder: NSCoder) {
 		super.init(coder: coder);
 		//fatalError("init(coder:) has not been implemented")
 	}
 	
-	func setSelected(onSelect: Bool = true) {
+	public func setSelected(onSelect: Bool = true) {
 		var allGroupButtons: [UIRadioButton] = self.groupBouttons ?? [];
 		if let group = self.group {
 			for rb in group.buttons where !allGroupButtons.contains(rb) {
@@ -119,7 +119,7 @@ class UIRadioButton: UIButton {
 		}
 	}
 	
-	func setGroupButtons(_ buttons: [UIRadioButton]) {
+	public func setGroupButtons(_ buttons: [UIRadioButton]) {
 		self.groupBouttons = buttons;
 		for rb in buttons {
 			rb.groupBouttons = buttons;

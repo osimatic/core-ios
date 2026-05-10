@@ -1,12 +1,12 @@
 import Foundation
 import UIKit
 
-extension UIColor {
+public extension UIColor {
 	public static var TEXT_SUCCESS = UIColor(hex: "198754");
 	public static var TEXT_WARNING = UIColor(hex: "8A6D3B");
 	public static var TEXT_DANGER = UIColor(hex: "A94442");
 	public static var TEXT_INFO = UIColor(hex: "1AA3BE");
-	
+
 	public static var BG_SUCCESS = UIColor(hex: "DBF7D9");
 	public static var BG_WARNING = UIColor(hex: "F7EDD9");
 	public static var BG_DANGER = UIColor(hex: "F7D9D9");
@@ -42,11 +42,11 @@ extension UIColor {
 		self.init(red: r, green: g, blue: b, alpha: a)
 	}
 	
-	static func colorWithHexString (hex:String) -> UIColor {
+	public static func colorWithHexString (hex:String) -> UIColor {
 		return UIColor(hex:hex);
 	}
 	
-	func toHex(alpha: Bool = false) -> String? {
+	public func toHex(alpha: Bool = false) -> String? {
 		guard let components = cgColor.components, components.count >= 3 else {
 			return nil;
 		}

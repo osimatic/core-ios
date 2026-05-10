@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-extension UITableView {
+public extension UITableView {
 	func getBasicCell(identifier: String = "basicCell", backgroundColor: UIColor? = nil) -> UITableViewCell {
 		if let cell = self.dequeueReusableCell(withIdentifier: identifier) {
 			if let backgroundColor = backgroundColor {

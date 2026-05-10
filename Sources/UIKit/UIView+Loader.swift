@@ -1,7 +1,7 @@
 import Foundation;
 import UIKit;
 
-extension UIView {
+public extension UIView {
 	func showLoader(contentView: UIView? = nil) {
 		self.showLoader(contentView: contentView, submitButton: nil);
 	}

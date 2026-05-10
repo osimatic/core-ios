@@ -3,16 +3,16 @@ import UIKit
 /**
  * Created by Miraan on 15/10/2017
  */
-class CalendarDateRangePickerHeaderView: UICollectionReusableView {
+public class CalendarDateRangePickerHeaderView: UICollectionReusableView {
+
+    public var label: UILabel!
     
-    var label: UILabel!
-    
-    override init(frame: CGRect) {
+    public override init(frame: CGRect) {
         super.init(frame: frame)
         initLabel()
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         initLabel()
     }

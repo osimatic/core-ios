@@ -1,18 +1,18 @@
 import Foundation
 import UIKit
 
-class DurationPickerAlert: UIAlertController, UIPickerViewDataSource, UIPickerViewDelegate {
-	var hourPicker: UIPickerView!;
-	var minutePicker: UIPickerView!;
-	var secondPicker: UIPickerView!;
-	
-	var hours: [Int] = Array(0...23);
-	var minutes: [Int] = Array(0...59);
-	var seconds: [Int] = Array(0...59);
+public class DurationPickerAlert: UIAlertController, UIPickerViewDataSource, UIPickerViewDelegate {
+	public var hourPicker: UIPickerView!;
+	public var minutePicker: UIPickerView!;
+	public var secondPicker: UIPickerView!;
 
-	var onChange: ((Int) -> Void)? = nil;
+	public var hours: [Int] = Array(0...23);
+	public var minutes: [Int] = Array(0...59);
+	public var seconds: [Int] = Array(0...59);
+
+	public var onChange: ((Int) -> Void)? = nil;
 	
-	init(initialDuration: Int? = nil, onChange: ((Int) -> Void)? = nil) {
+	public init(initialDuration: Int? = nil, onChange: ((Int) -> Void)? = nil) {
 		super.init(nibName: nil, bundle: nil);
 		
 		self.title = "Sélectionnez la durée";
@@ -76,12 +76,12 @@ class DurationPickerAlert: UIAlertController, UIPickerViewDataSource, UIPickerVi
 		//self.contentSize = CGSize(width: 320, height: 200);
 	}
 	
-	required init?(coder: NSCoder) {
+	public required init?(coder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
 	}
 	
 	// Function to set the UIPickerView selections based on a duration in seconds
-	func setPickersForDuration(_ durationInSeconds: Int) {
+	public func setPickersForDuration(_ durationInSeconds: Int) {
 		let hours = durationInSeconds / 3600;
 		let remainingSeconds = durationInSeconds % 3600;
 		let minutes = remainingSeconds / 60;
@@ -92,11 +92,11 @@ class DurationPickerAlert: UIAlertController, UIPickerViewDataSource, UIPickerVi
 		secondPicker.selectRow(seconds, inComponent: 0, animated: false);
 	}
 	
-	func numberOfComponents(in pickerView: UIPickerView) -> Int {
+	public func numberOfComponents(in pickerView: UIPickerView) -> Int {
 		return 1;
 	}
 
-	func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+	public func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
 		if pickerView == hourPicker {
 			return hours.count;
 		} else if pickerView == minutePicker {
@@ -107,7 +107,7 @@ class DurationPickerAlert: UIAlertController, UIPickerViewDataSource, UIPickerVi
 		return 0;
 	}
 
-	func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+	public func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
 		if pickerView == hourPicker {
 			return String(hours[row]);
 		} else if pickerView == minutePicker {
@@ -118,7 +118,7 @@ class DurationPickerAlert: UIAlertController, UIPickerViewDataSource, UIPickerVi
 		return "";
 	}
 
-	func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+	public func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
 		self.updateDuration();
 	}
 	

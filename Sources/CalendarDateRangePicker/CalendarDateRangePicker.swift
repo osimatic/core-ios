@@ -1,8 +1,8 @@
 import Foundation
 import UIKit
 
-class CalendarDateRangePicker {
-	static func getViewController(delegate: CalendarDateRangePickerViewControllerDelegate, selectedStartDate: Date? = nil, selectedEndDate: Date? = nil, selectedColor: UIColor? = nil) -> CalendarDateRangePickerViewController {
+public class CalendarDateRangePicker {
+	public static func getViewController(delegate: CalendarDateRangePickerViewControllerDelegate, selectedStartDate: Date? = nil, selectedEndDate: Date? = nil, selectedColor: UIColor? = nil) -> CalendarDateRangePickerViewController {
 		let dateRangePickerViewController = CalendarDateRangePickerViewController(collectionViewLayout: UICollectionViewFlowLayout());
 		dateRangePickerViewController.delegate = delegate;
 		

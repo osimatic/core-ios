@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-extension UILabel {
+public extension UILabel {
 	func setHTMLFromString(_ text: String) {
 		self.attributedText = text.toHtmlAttributedString(font: self.font);
 	}
@@ -14,7 +14,7 @@ extension UILabel {
 	}
 }
 
-extension UITextView {
+public extension UITextView {
 	func setHTMLFromString(_ text: String) {
 		self.attributedText = text.toHtmlAttributedString(font: self.font);
 	}

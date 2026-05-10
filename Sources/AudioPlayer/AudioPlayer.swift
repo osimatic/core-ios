@@ -4,17 +4,17 @@ import AVFoundation
 // https://stackoverflow.com/questions/34563329/how-to-play-mp3-audio-from-url-in-ios-swift
 // https://santoshkumarjm.medium.com/how-to-design-a-custom-avplayer-to-play-audio-using-url-in-ios-swift-439f0dbf2ff2
 
-protocol AudioPlayerDelegate {
+public protocol AudioPlayerDelegate {
 	func onAudioPlayerUpdateTime(sender: AudioPlayer);
 	func onAudioPlayerFinishedPlaying(sender: AudioPlayer);
 }
 
-class AudioPlayer {
-	var audioPlayer: AVPlayer;
-	var delegate: AudioPlayerDelegate;
-	var observer: NSKeyValueObservation;
+public class AudioPlayer {
+	public var audioPlayer: AVPlayer;
+	public var delegate: AudioPlayerDelegate;
+	public var observer: NSKeyValueObservation;
 	
-	init (url: String, delegate: AudioPlayerDelegate, onFileLoaded: @escaping () -> Void = {}) {
+	public init (url: String, delegate: AudioPlayerDelegate, onFileLoaded: @escaping () -> Void = {}) {
 		NSLog("url: %@ ", url);
 		self.delegate = delegate;
 		
@@ -54,43 +54,43 @@ class AudioPlayer {
 	*/
 
 	// Simply fire the play Event
-	func playAudio() {
+	public func playAudio() {
 		self.audioPlayer.play();
 	}
 
 	// Simply fire the pause Event
-	func pauseAudio() {
+	public func pauseAudio() {
 		self.audioPlayer.pause();
 	}
 
 	// To set the current Position of the playing audio File
-	func setCurrentAudioTime(_ value: Float) {
+	public func setCurrentAudioTime(_ value: Float) {
 		self.audioPlayer.currentItem?.seek(to: CMTimeMake(value: Int64(value) * 1000, timescale: 1000), toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero, completionHandler: nil);
 	}
 
 	// Get the time where audio is playing right now
-	func getCurrentAudioTime() -> Float {
+	public func getCurrentAudioTime() -> Float {
 		//return Float(self.audioPlayer.currentItem?.currentTime() ?? 0);
 		return Float(CMTimeGetSeconds((self.audioPlayer.currentItem?.currentTime())!));
 	}
 
 	// Get the whole length of the audio file
-	func getAudioDuration() -> Float {
+	public func getAudioDuration() -> Float {
 		guard let playerItem = self.audioPlayer.currentItem else { return 0; }
 		return Float(CMTimeGetSeconds(playerItem.asset.duration));
 	}
 	
-	func getCurrentStatus() -> AVPlayerItem.Status {
+	public func getCurrentStatus() -> AVPlayerItem.Status {
 		return self.audioPlayer.currentItem?.status ?? AVPlayerItem.Status.unknown;
 	}
 	
-	func isReadyToPlay() -> Bool {
+	public func isReadyToPlay() -> Bool {
 		return self.getCurrentStatus() == .readyToPlay;
 	}
-	func isPaused() -> Bool {
+	public func isPaused() -> Bool {
 		return self.audioPlayer.rate == 0;
 	}
-	func isPlaybackLikelyToKeepUp() -> Bool {
+	public func isPlaybackLikelyToKeepUp() -> Bool {
 		return self.audioPlayer.currentItem?.isPlaybackLikelyToKeepUp ?? false;
 	}
 	

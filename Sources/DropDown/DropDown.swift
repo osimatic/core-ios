@@ -7,19 +7,19 @@ public protocol DropDownItem: AnyObject {
 /**
  * Created by Jishnu Raj T on 26/04/2018
  */
-class DropDownEmptyItem: DropDownItem {
-	var text: String;
-	init(_ text: String) {
+public class DropDownEmptyItem: DropDownItem {
+	public var text: String;
+	public init(_ text: String) {
 		self.text = text;
 	}
-	func getLabel() -> String {
+	public func getLabel() -> String {
 		return self.text;
 	}
 }
 open class DropDown: UITextField {
-	var arrow: Arrow!
-	var table: UITableView!
-	var shadow: UIView!
+	public var arrow: Arrow!
+	public var table: UITableView!
+	public var shadow: UIView!
 	public var selectedIndex: Int?
 
 	// MARK: IBInspectable

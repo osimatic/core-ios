@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-extension UITextField {
+public extension UITextField {
 	fileprivate func setPasswordToggleImage(_ button: UIButton) {
 		if (isSecureTextEntry) {
 			button.setImage(UIImage(systemName: "eye.slash.fill"), for: .normal);
@@ -11,7 +11,7 @@ extension UITextField {
 		}
 	}
 
-	func enablePasswordToggle() {
+	public func enablePasswordToggle() {
 		let button = UIButton(type: .custom);
 		setPasswordToggleImage(button);
 		button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -16, bottom: 0, right: 0);

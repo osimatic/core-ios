@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-extension UIView {
+public extension UIView {
 	func addSwipeGesture(target: Any, selector: Selector) {
 		let leftSwipeGesture = UISwipeGestureRecognizer(target: target, action: selector);
 		let rightSwipeGesture = UISwipeGestureRecognizer(target: target, action: selector);

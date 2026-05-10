@@ -1,8 +1,8 @@
 import Foundation
 import UIKit
 
-extension UIButton {
-	static func getFloatingButton(color: UIColor = .tintColor) -> UIButton {
+public extension UIButton {
+	public static func getFloatingButton(color: UIColor = .tintColor) -> UIButton {
 		return {
 			let button = UIButton(frame: CGRect(x: 0, y: 0, width: 60, height: 60));
 			//button.layer.masksToBounds = true;
@@ -17,7 +17,7 @@ extension UIButton {
 		}();
 	}
 	
-	func setFloatingButtonPosition(_ view: UIView) {
+	public func setFloatingButtonPosition(_ view: UIView) {
 		self.frame = CGRect(
 			x: view.frame.size.width - 70,
 			y: view.frame.size.height - 100,
