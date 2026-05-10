@@ -8,6 +8,9 @@ public class HTTPClient {
 
 	/*
 	 * Sends an HTTP request and delivers the response on the main thread.
+	 * When sendAuthorizationHeader is true, the current authorizationToken static is attached as a Bearer token.
+	 * On 401 with an expired JWT token, refreshToken() is called transparently and the request is retried.
+	 * On 401 with an invalid JWT token, onInvalidToken() is called.
 	 *
 	 * @param httpMethod              The HTTP method (GET, POST, PATCH, DELETE).
 	 * @param url                     The endpoint URL string.
@@ -17,9 +20,9 @@ public class HTTPClient {
 	 * @param onError                 Called on the main thread with the error if the request fails.
 	 * @param addditionalHttpHeaders  Extra headers to include in the request.
 	 * @param asJson                  If true, encodes the body as JSON instead of form-urlencoded.
-	 * @param userSession             If provided, attaches a Bearer token and handles token refresh.
+	 * @param sendAuthorizationHeader If true, attaches the current authorizationToken as Bearer.
 	 */
-	public static func request(httpMethod: String, url: String, requestParams: [String: Any], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], asJson: Bool = false, userSession: UserSession? = nil) {
+	public static func request(httpMethod: String, url: String, requestParams: [String: Any], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], asJson: Bool = false, sendAuthorizationHeader: Bool = true) {
 		var urlWithRequestParams = url;
 		if (HTTPMethod.GET == httpMethod) {
 			urlWithRequestParams += "?"+URLQueryString.getQueryStringFromArray(requestParams);
@@ -30,7 +33,8 @@ public class HTTPClient {
 		var request = URLRequest(url: urlObj);
 
 		// HTTP Headers
-		for (key, value) in getHttpHeaders(httpMethod: httpMethod, addditionalHttpHeaders: addditionalHttpHeaders, accessToken: userSession?.getAccessToken(), asJson: asJson) {
+		let accessToken = sendAuthorizationHeader ? HTTPClient.authorizationToken : nil;
+		for (key, value) in getHttpHeaders(httpMethod: httpMethod, addditionalHttpHeaders: addditionalHttpHeaders, accessToken: accessToken, asJson: asJson) {
 			request.setValue(value, forHTTPHeaderField: key);
 		}
 
@@ -68,14 +72,19 @@ public class HTTPClient {
 				let httpResponse = httpResponse as! HTTPURLResponse;
 				NSLog("HTTP status: %d ; URL: %@", httpResponse.statusCode, urlObj.absoluteString);
 
-				if let userSession = userSession, isExpiredToken(httpResponse.statusCode, data) {
-					refreshToken(
-						userSession: userSession,
-						onSuccess: {
-							NSLog("Retry HTTP request after token refresh");
-							HTTPClient.request(httpMethod: httpMethod, url: url, requestParams: requestParams, onSuccess: onSuccess, onError: onError, addditionalHttpHeaders: addditionalHttpHeaders, asJson: asJson, userSession: userSession);
-						}
-					);
+				if sendAuthorizationHeader, isExpiredToken(httpResponse.statusCode, data) {
+					refreshToken(onComplete: {
+						NSLog("Retry HTTP request after token refresh");
+						HTTPClient.request(httpMethod: httpMethod, url: url, requestParams: requestParams, onSuccess: onSuccess, onError: onError, addditionalHttpHeaders: addditionalHttpHeaders, asJson: asJson, sendAuthorizationHeader: sendAuthorizationHeader);
+					});
+					return;
+				}
+
+				if isInvalidToken(httpResponse.statusCode, data) {
+					onInvalidToken();
+					DispatchQueue.main.async {
+						onError(nil);
+					}
 					return;
 				}
 
@@ -90,17 +99,20 @@ public class HTTPClient {
 
 	/*
 	 * Downloads a file via HTTP and saves it to the documents directory.
+	 * When sendAuthorizationHeader is true, the current authorizationToken static is attached as a Bearer token.
+	 * On 401 with an expired JWT token, refreshToken() is called transparently and the download is retried.
+	 * On 401 with an invalid JWT token, onInvalidToken() is called.
 	 *
-	 * @param httpMethod             The HTTP method (typically GET).
-	 * @param url                    The endpoint URL string.
-	 * @param requestParams          The request parameters.
-	 * @param fileName               The local file name used when saving to the documents directory.
-	 * @param onSuccess              Called on the main thread with the HTTP response on success.
-	 * @param onError                Called on the main thread with the error if the download fails.
-	 * @param addditionalHttpHeaders Extra headers to include in the request.
-	 * @param userSession            If provided, attaches a Bearer token.
+	 * @param httpMethod              The HTTP method (typically GET).
+	 * @param url                     The endpoint URL string.
+	 * @param requestParams           The request parameters.
+	 * @param fileName                The local file name used when saving to the documents directory.
+	 * @param onSuccess               Called on the main thread with the HTTP response on success.
+	 * @param onError                 Called on the main thread with the error if the download fails.
+	 * @param addditionalHttpHeaders  Extra headers to include in the request.
+	 * @param sendAuthorizationHeader If true, attaches the current authorizationToken as Bearer.
 	 */
-	public static func downloadFile(httpMethod: String, url: String, requestParams: [String: Any], fileName: String, onSuccess: @escaping(HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], userSession: UserSession? = nil) {
+	public static func downloadFile(httpMethod: String, url: String, requestParams: [String: Any], fileName: String, onSuccess: @escaping(HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
 		DispatchQueue.global(qos: .userInitiated).async {
 			var urlWithRequestParams = url;
 			if (HTTPMethod.GET == httpMethod) {
@@ -112,7 +124,8 @@ public class HTTPClient {
 			var request = URLRequest(url: urlObj);
 
 			// HTTP Headers
-			for (key, value) in getHttpHeaders(httpMethod: httpMethod, addditionalHttpHeaders: addditionalHttpHeaders, accessToken: userSession?.getAccessToken()) {
+			let accessToken = sendAuthorizationHeader ? HTTPClient.authorizationToken : nil;
+			for (key, value) in getHttpHeaders(httpMethod: httpMethod, addditionalHttpHeaders: addditionalHttpHeaders, accessToken: accessToken) {
 				request.setValue(value, forHTTPHeaderField: key);
 			}
 
@@ -135,6 +148,24 @@ public class HTTPClient {
 
 				let httpResponse = httpResponse as! HTTPURLResponse;
 				NSLog("HTTP status: %d ; URL: %@", httpResponse.statusCode, urlObj.absoluteString);
+
+				if sendAuthorizationHeader, httpResponse.statusCode == 401 {
+					let errorData = try? Data(contentsOf: tempLocalUrl);
+					if isExpiredToken(httpResponse.statusCode, errorData) {
+						refreshToken(onComplete: {
+							NSLog("Retry downloadFile after token refresh");
+							HTTPClient.downloadFile(httpMethod: httpMethod, url: url, requestParams: requestParams, fileName: fileName, onSuccess: onSuccess, onError: onError, addditionalHttpHeaders: addditionalHttpHeaders, sendAuthorizationHeader: sendAuthorizationHeader);
+						});
+						return;
+					}
+					if isInvalidToken(httpResponse.statusCode, errorData) {
+						onInvalidToken();
+						DispatchQueue.main.async {
+							onError(nil);
+						}
+						return;
+					}
+				}
 
 				let documentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 				let destinationUrl = documentsUrl.appendingPathComponent(fileName);
@@ -195,19 +226,76 @@ public class HTTPClient {
 		return httpHeaders;
 	}
 
+	/* Current Bearer access token. Sent automatically when sendAuthorizationHeader is true. */
+	public static var authorizationToken: String? = nil;
+
+	/* URL called to refresh the access token. */
+	public static var refreshTokenUrl: String? = nil;
+
+	/* Returns the current refresh token. Called by refreshToken() to build the refresh request. */
+	public static var getRefreshTokenCallback: (() -> String?)? = nil;
+
+	/* Called after a successful refresh with the new (accessToken, refreshToken). The app should persist them in its session. */
+	public static var onSuccessRefreshTokenCallback: ((String, String) -> Void)? = nil;
+
+	/* Called when the refresh token request fails (refresh token is no longer valid). */
+	public static var onInvalidRefreshTokenCallback: (() -> Void)? = nil;
+
+	/* Called when a request returns an invalid (non-expired) JWT token. authorizationToken is cleared before this is invoked. */
+	public static var onInvalidTokenCallback: (() -> Void)? = nil;
+
+	public static func setAuthorizationToken(_ token: String?) {
+		HTTPClient.authorizationToken = token;
+	}
+
+	public static func setRefreshTokenUrl(_ url: String) {
+		HTTPClient.refreshTokenUrl = url;
+	}
+
+	public static func setGetRefreshTokenCallback(_ callback: @escaping () -> String?) {
+		HTTPClient.getRefreshTokenCallback = callback;
+	}
+
+	public static func setOnSuccessRefreshTokenCallback(_ callback: @escaping (String, String) -> Void) {
+		HTTPClient.onSuccessRefreshTokenCallback = callback;
+	}
+
+	public static func setOnInvalidRefreshTokenCallback(_ callback: @escaping () -> Void) {
+		HTTPClient.onInvalidRefreshTokenCallback = callback;
+	}
+
+	public static func setOnInvalidTokenCallback(_ callback: @escaping () -> Void) {
+		HTTPClient.onInvalidTokenCallback = callback;
+	}
+
+	/*
+	 * Called when a request returns an invalid JWT token. Clears the stored authorizationToken
+	 * and invokes onInvalidTokenCallback if configured.
+	 */
+	public static func onInvalidToken() {
+		HTTPClient.authorizationToken = nil;
+		HTTPClient.onInvalidTokenCallback?();
+	}
+
 	static var refreshTokenStarted = false;
 	static var listCompleteCallbackAfterRefreshTokenStarted: [() -> Void] = [];
 
 	/*
-	 * Refreshes the access token using the stored refresh token.
+	 * Refreshes the access token using the configured statics.
+	 * Reads refreshTokenUrl and getRefreshTokenCallback to build the request.
+	 * On success, automatically updates authorizationToken with the new access token,
+	 * then invokes onSuccessRefreshTokenCallback so the app can persist the new tokens.
 	 * Queues all pending retry callbacks and executes them once the refresh succeeds.
 	 * Concurrent refresh requests are de-duplicated: only one refresh call is made at a time.
 	 *
-	 * @param userSession The session holding the refresh token and receiving the new tokens.
-	 * @param onSuccess   Called after the token has been refreshed successfully.
+	 * @param onComplete Called after the refresh succeeds (typically the retry of the original request).
+	 * @param onError    Called for the current caller if the refresh fails.
 	 */
-	public static func refreshToken(userSession: UserSession, onSuccess: @escaping () -> Void = {}) -> Void {
-		listCompleteCallbackAfterRefreshTokenStarted.append(onSuccess);
+	public static func refreshToken(
+		onComplete: @escaping () -> Void = {},
+		onError: ((Error?) -> Void)? = nil
+	) {
+		listCompleteCallbackAfterRefreshTokenStarted.append(onComplete);
 
 		if (refreshTokenStarted) {
 			return;
@@ -215,23 +303,43 @@ public class HTTPClient {
 
 		refreshTokenStarted = true;
 
+		guard let refreshTokenUrl = HTTPClient.refreshTokenUrl else {
+			NSLog("URL refresh token non définie. Appeler HTTPClient.setRefreshTokenUrl(url)");
+			refreshTokenStarted = false;
+			listCompleteCallbackAfterRefreshTokenStarted = [];
+			onError?(nil);
+			return;
+		}
+
+		guard let currentRefreshToken = HTTPClient.getRefreshTokenCallback?(), !currentRefreshToken.isEmpty else {
+			NSLog("Refresh token getter non défini ou vide. Appeler HTTPClient.setGetRefreshTokenCallback(callback)");
+			refreshTokenStarted = false;
+			listCompleteCallbackAfterRefreshTokenStarted = [];
+			onError?(nil);
+			return;
+		}
+
 		var formData: [String: Any] = [:];
-		formData["refresh_token"] = userSession.getRefreshToken();
-		HTTPClient.request(httpMethod: HTTPMethod.POST, url: Api.URL_REFRESH_TOKEN, requestParams: formData,
+		formData["refresh_token"] = currentRefreshToken;
+		HTTPClient.request(httpMethod: HTTPMethod.POST, url: refreshTokenUrl, requestParams: formData,
 			onSuccess: { data, httpResponse in
 				guard httpResponse.statusCode == HTTPResponseStatus.OK, let data = data else {
-					HTTPClient.logErrorDataNil("URL_REFRESH_TOKEN", httpResponse.statusCode);
+					HTTPClient.logErrorDataNil(refreshTokenUrl, httpResponse.statusCode);
 					refreshTokenStarted = false;
 					listCompleteCallbackAfterRefreshTokenStarted = [];
+					HTTPClient.onInvalidRefreshTokenCallback?();
+					onError?(nil);
 					return;
 				}
 
 				do {
 					if let json = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String: Any] {
-						let accessToken = Json.getString(json["token"]);
-						NSLog("Token refresh succeeded. New access token: %@", accessToken);
-						userSession.setAccessToken(accessToken);
-						userSession.setRefreshToken(Json.getString(json["refresh_token"]));
+						let newAccessToken = Json.getString(json["token"]);
+						let newRefreshToken = Json.getString(json["refresh_token"]);
+						NSLog("Token refresh succeeded. New access token: %@", newAccessToken);
+
+						HTTPClient.authorizationToken = newAccessToken;
+						HTTPClient.onSuccessRefreshTokenCallback?(newAccessToken, newRefreshToken);
 
 						refreshTokenStarted = false;
 
@@ -241,23 +349,31 @@ public class HTTPClient {
 						listCompleteCallbackAfterRefreshTokenStarted = [];
 					}
 					else {
-						HTTPClient.logErrorDecodingData("URL_REFRESH_TOKEN", nil);
+						HTTPClient.logErrorDecodingData(refreshTokenUrl, nil);
 						refreshTokenStarted = false;
 						listCompleteCallbackAfterRefreshTokenStarted = [];
+						HTTPClient.onInvalidRefreshTokenCallback?();
+						onError?(nil);
 					}
 				}
 				catch let error {
-					HTTPClient.logErrorDecodingData("URL_REFRESH_TOKEN", error);
+					HTTPClient.logErrorDecodingData(refreshTokenUrl, error);
 					refreshTokenStarted = false;
 					listCompleteCallbackAfterRefreshTokenStarted = [];
+					HTTPClient.onInvalidRefreshTokenCallback?();
+					onError?(error);
 				}
 			},
 			onError: { error in
 				NSLog("Token refresh error: %@", error?.localizedDescription ?? "<nil>");
 				refreshTokenStarted = false;
 				listCompleteCallbackAfterRefreshTokenStarted = [];
+				HTTPClient.onInvalidRefreshTokenCallback?();
+				onError?(error);
 			},
-			asJson: true
+			addditionalHttpHeaders: [:],
+			asJson: true,
+			sendAuthorizationHeader: false
 		);
 	}
 
