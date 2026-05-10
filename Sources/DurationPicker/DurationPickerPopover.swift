@@ -1,8 +1,8 @@
 import Foundation
 import UIKit
 
-class DurationPickerPopover {
-	static func show(viewController: UIViewController, durationTextField: UITextField, durationInSeconds: Int? = nil) {
+public class DurationPickerPopover {
+	public static func show(viewController: UIViewController, durationTextField: UITextField, durationInSeconds: Int? = nil) {
 		let durationPickerPopoverView = DurationPickerPopoverView();
 		if let durationInSeconds = durationInSeconds {
 			durationPickerPopoverView.setPickersForDuration(durationInSeconds);
