@@ -35,8 +35,8 @@ public class UICheckbox: UIButton {
 		self.contentHorizontalAlignment = UIControl.ContentHorizontalAlignment.left;
 		self.titleEdgeInsets = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 0);
 		
-		self.setImage(UIImage(named: "checkbox_checked"), for: UIControl.State.selected);
-		self.setImage(UIImage(named: "checkbox_unchecked"), for: UIControl.State.normal);
+		self.setImage(UIImage(named: "checkbox_checked", in: .module, with: nil), for: UIControl.State.selected);
+		self.setImage(UIImage(named: "checkbox_unchecked", in: .module, with: nil), for: UIControl.State.normal);
 	}
 	
 	public func initCheckbox(_ title: String, _ action: ((UIButton) -> Void)? = nil, isChecked: Bool = false) {

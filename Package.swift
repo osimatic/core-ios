@@ -8,6 +8,14 @@ let package = Package(
         .library(name: "OsimaticCoreIos", targets: ["OsimaticCoreIos"]),
     ],
     targets: [
-        .target(name: "OsimaticCoreIos", path: "Sources"),
+        .target(
+            name: "OsimaticCoreIos",
+            path: "Sources",
+            resources: [
+                .process("AudioPlayer/Img"),
+                .process("Checkbox/Img"),
+                .process("RadioButton/Img"),
+            ]
+        ),
     ]
 )

@@ -71,8 +71,8 @@ public class UIRadioButton: UIButton {
 		self.contentHorizontalAlignment = UIControl.ContentHorizontalAlignment.left;
 		self.titleEdgeInsets = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 0);
 		
-		self.setImage(UIImage(named: "radiobutton_checked"), for: UIControl.State.selected);
-		self.setImage(UIImage(named: "radiobutton_unchecked"), for: UIControl.State.normal);
+		self.setImage(UIImage(named: "radiobutton_checked", in: .module, with: nil), for: UIControl.State.selected);
+		self.setImage(UIImage(named: "radiobutton_unchecked", in: .module, with: nil), for: UIControl.State.normal);
 	}
 	
 	public override func awakeFromNib() {
