@@ -60,6 +60,18 @@ public extension String {
 	}
 
 	/*
+	 Returns the string with any trailing colon removed.
+	 The string is first trimmed of whitespace and newlines on both ends,
+	 then a final ':' (optionally preceded by whitespace) is stripped.
+	 Example: "Email :" -> "Email", "Email:" -> "Email".
+	 */
+	func removingTrailingColon() -> String {
+		let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines);
+		guard trimmed.hasSuffix(":") else { return trimmed; }
+		return String(trimmed.dropLast()).trimmingCharacters(in: .whitespacesAndNewlines);
+	}
+
+	/*
 	 * Returns a percent-encoded version of this string suitable for use in a URL query.
 	 * Uses RFC 3986 unreserved characters.
 	 */
