@@ -16,6 +16,15 @@ public struct RadioButtonView<Tag: Hashable>: UIViewRepresentable {
 		self._selection = selection
 	}
 
+	public init(title: String, tag: Tag, selection: Binding<Tag>) {
+		self.title = title
+		self.tag = tag
+		self._selection = Binding<Tag?>(
+			get: { selection.wrappedValue },
+			set: { if let new = $0 { selection.wrappedValue = new } }
+		)
+	}
+
 	public func makeCoordinator() -> Coordinator {
 		Coordinator(self)
 	}
