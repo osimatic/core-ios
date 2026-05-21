@@ -34,7 +34,7 @@ public struct RadioButtonView<Tag: Hashable>: View {
 	// MARK: - Group
 
 	public static func vertical(_ opts: [(tag: Tag, label: String)], selection: Binding<Tag?>) -> some View {
-		VStack(spacing: 4) {
+		VStack(alignment: .leading, spacing: 4) {
 			ForEach(Array(opts.enumerated()), id: \.offset) { (_, o) in
 				RadioButtonView(o.label, tag: o.tag, selection: selection)
 			}
