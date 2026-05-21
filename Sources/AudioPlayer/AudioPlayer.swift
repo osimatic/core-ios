@@ -1,105 +1,107 @@
 import Foundation
 import AVFoundation
-
-// https://stackoverflow.com/questions/34563329/how-to-play-mp3-audio-from-url-in-ios-swift
-// https://santoshkumarjm.medium.com/how-to-design-a-custom-avplayer-to-play-audio-using-url-in-ios-swift-439f0dbf2ff2
+import Combine
 
 public protocol AudioPlayerDelegate {
-	func onAudioPlayerUpdateTime(sender: AudioPlayer);
-	func onAudioPlayerFinishedPlaying(sender: AudioPlayer);
+	func onAudioPlayerUpdateTime(sender: AudioPlayer)
+	func onAudioPlayerFinishedPlaying(sender: AudioPlayer)
 }
 
-public class AudioPlayer {
-	public var audioPlayer: AVPlayer;
-	public var delegate: AudioPlayerDelegate;
-	public var observer: NSKeyValueObservation;
-	
-	public init (url: String, delegate: AudioPlayerDelegate, onFileLoaded: @escaping () -> Void = {}) {
-		NSLog("url: %@ ", url);
-		self.delegate = delegate;
-		
-		let playerItem = AVPlayerItem(url: URL(string: url)!);
-		self.audioPlayer = AVPlayer(playerItem: playerItem);
-		//self.audioPlayer = AVPlayer(url: url);
-		
-		// check player has completed loading
-		self.observer = playerItem.observe(\.status, options:  [.new, .old], changeHandler: { (playerItem, change) in
-			//NSLog(String(format: "playerItem.status: %d", playerItem.status as! CVarArg));
+public class AudioPlayer: ObservableObject {
+	@Published public var isPlaying: Bool = false
+	@Published public var currentTime: Float = 0
+	@Published public var duration: Float = 0
+
+	public var audioPlayer: AVPlayer
+	public var delegate: AudioPlayerDelegate?
+	public var observer: NSKeyValueObservation
+
+	public init(url: String, delegate: AudioPlayerDelegate? = nil, onFileLoaded: @escaping () -> Void = {}) {
+		self.delegate = delegate
+
+		let playerItem = AVPlayerItem(url: URL(string: url)!)
+		self.audioPlayer = AVPlayer(playerItem: playerItem)
+
+		self.observer = playerItem.observe(\.status, options: [.new, .old]) { playerItem, _ in
 			if playerItem.status == .readyToPlay {
-				//NSLog("audio duration:  %f", self.getAudioDuration());
-				onFileLoaded();
-			}
-		});
-		
-		// periodic callback
-		audioPlayer.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, preferredTimescale: 1), queue: DispatchQueue.main) { (CMTime) -> Void in
-			self.delegate.onAudioPlayerUpdateTime(sender: self);
-		}
-		
-		// check player has completed playing audio
-		NotificationCenter.default.addObserver(self, selector: #selector(self.finishedPlaying), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: playerItem);
-	}
-	
-	/*
-	override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-		if (object as? NSObject == self.audioPlayer!.currentItem && keyPath == "status") {
-			if (self.audioPlayer!.currentItem?.status == AVPlayerItem.Status.readyToPlay) {
-				NSLog("Pas d'erreur ");
-			}
-			else if (self.audioPlayer!.currentItem?.status == AVPlayerItem.Status.failed) {
-				NSLog("Erreur : %@ ", self.audioPlayer!.currentItem?.error.debugDescription ?? "");
+				onFileLoaded()
 			}
 		}
-	}
-	*/
 
-	// Simply fire the play Event
+		self.audioPlayer.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, preferredTimescale: 1), queue: .main) { [weak self] _ in
+			guard let self else { return }
+			if self.isReadyToPlay() {
+				self.currentTime = self.getCurrentAudioTime()
+				self.duration = self.getAudioDuration()
+			}
+			if !self.isPlaybackLikelyToKeepUp() {
+				self.isPlaying = false
+			}
+			self.delegate?.onAudioPlayerUpdateTime(sender: self)
+		}
+
+		NotificationCenter.default.addObserver(self, selector: #selector(finishedPlaying), name: .AVPlayerItemDidPlayToEndTime, object: playerItem)
+	}
+
+	// MARK: - Playback
+
+	public func togglePlay() {
+		if isPaused() {
+			isPlaying = true
+			playAudio()
+		} else {
+			isPlaying = false
+			pauseAudio()
+		}
+	}
+
+	public func seek(to value: Float) {
+		let time = value * duration
+		setCurrentAudioTime(time)
+		currentTime = time
+	}
+
 	public func playAudio() {
-		self.audioPlayer.play();
+		audioPlayer.play()
 	}
 
-	// Simply fire the pause Event
 	public func pauseAudio() {
-		self.audioPlayer.pause();
+		audioPlayer.pause()
 	}
 
-	// To set the current Position of the playing audio File
 	public func setCurrentAudioTime(_ value: Float) {
-		self.audioPlayer.currentItem?.seek(to: CMTimeMake(value: Int64(value) * 1000, timescale: 1000), toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero, completionHandler: nil);
+		audioPlayer.currentItem?.seek(to: CMTimeMake(value: Int64(value) * 1000, timescale: 1000), toleranceBefore: .zero, toleranceAfter: .zero, completionHandler: nil)
 	}
 
-	// Get the time where audio is playing right now
 	public func getCurrentAudioTime() -> Float {
-		//return Float(self.audioPlayer.currentItem?.currentTime() ?? 0);
-		return Float(CMTimeGetSeconds((self.audioPlayer.currentItem?.currentTime())!));
+		return Float(CMTimeGetSeconds(audioPlayer.currentItem?.currentTime() ?? .zero))
 	}
 
-	// Get the whole length of the audio file
 	public func getAudioDuration() -> Float {
-		guard let playerItem = self.audioPlayer.currentItem else { return 0; }
-		return Float(CMTimeGetSeconds(playerItem.asset.duration));
+		guard let item = audioPlayer.currentItem else { return 0 }
+		return Float(CMTimeGetSeconds(item.asset.duration))
 	}
-	
+
 	public func getCurrentStatus() -> AVPlayerItem.Status {
-		return self.audioPlayer.currentItem?.status ?? AVPlayerItem.Status.unknown;
+		return audioPlayer.currentItem?.status ?? .unknown
 	}
-	
+
 	public func isReadyToPlay() -> Bool {
-		return self.getCurrentStatus() == .readyToPlay;
+		return getCurrentStatus() == .readyToPlay
 	}
+
 	public func isPaused() -> Bool {
-		return self.audioPlayer.rate == 0;
+		return audioPlayer.rate == 0
 	}
+
 	public func isPlaybackLikelyToKeepUp() -> Bool {
-		return self.audioPlayer.currentItem?.isPlaybackLikelyToKeepUp ?? false;
+		return audioPlayer.currentItem?.isPlaybackLikelyToKeepUp ?? false
 	}
-	
-	@objc func finishedPlaying() {
-		self.delegate.onAudioPlayerUpdateTime(sender: self);
+
+	@objc private func finishedPlaying() {
+		isPlaying = false
+		setCurrentAudioTime(0)
+		currentTime = 0
+		delegate?.onAudioPlayerFinishedPlaying(sender: self)
 	}
-	
-	@objc func statusChanged( _ myNotification:NSNotification) {
-		NSLog("status changed : ", myNotification.description);
-	}
-	
 }
