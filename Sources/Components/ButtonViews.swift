@@ -30,7 +30,7 @@ public func actionButton(_ title: String, image: String? = nil, color: Color = C
 	Button(action: action) {
 		HStack(spacing: 6) {
 			if let image = image {
-				Image(systemName: image)
+                SwiftUI.Image(systemName: image)
 					.font(.system(size: 15, weight: .medium))
 			}
 			Text(title)
