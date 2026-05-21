@@ -31,6 +31,6 @@ public struct CheckboxView: View {
 	private var text: some View {
 		Text(label)
 			.font(.system(size: vertical ? 11 : 14))
-			.foregroundColor(vertical ? Color.secondary : Color.primary)
+			.foregroundColor(Color.primary)
 	}
 }
