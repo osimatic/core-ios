@@ -63,7 +63,7 @@ private func optBinding<T>(_ b: Binding<T>) -> Binding<T?> {
 private func radioRow<T: Hashable>(_ label: String, tag: T, selection: Binding<T?>) -> some View {
 	Button { selection.wrappedValue = tag } label: {
 		HStack(spacing: 8) {
-			Image(systemName: selection.wrappedValue == tag ? "largecircle.fill.circle" : "circle")
+			SwiftUI.Image(systemName: selection.wrappedValue == tag ? "largecircle.fill.circle" : "circle")
 				.foregroundColor(selection.wrappedValue == tag ? .accentColor : .secondary)
 			Text(label).font(.system(size: 14)).foregroundColor(.primary)
 		}
