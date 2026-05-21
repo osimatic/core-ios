@@ -26,26 +26,32 @@ public func linkButton(_ title: String, action: @escaping () -> Void) -> some Vi
 	}
 }
 
-public func actionButton(_ title: String, color: Color = Color(.systemBlue), action: @escaping () -> Void) -> some View {
+public func actionButton(_ title: String, image: String? = nil, color: Color = Color(.systemBlue), action: @escaping () -> Void) -> some View {
 	Button(action: action) {
-		Text(title)
-			.font(.system(size: 15, weight: .medium))
-			.frame(maxWidth: .infinity)
-			.padding(.vertical, 12)
+		HStack(spacing: 6) {
+			if let image = image {
+				Image(systemName: image)
+					.font(.system(size: 15, weight: .medium))
+			}
+			Text(title)
+				.font(.system(size: 15, weight: .medium))
+		}
+		.frame(maxWidth: .infinity)
+		.padding(.vertical, 12)
 	}
 	.background(color)
 	.foregroundColor(.white)
 	.cornerRadius(8)
 }
 
-public func warningButton(_ title: String, action: @escaping () -> Void) -> some View {
-	actionButton(title, color: Color(.systemOrange), action: action)
+public func warningButton(_ title: String, image: String? = nil, action: @escaping () -> Void) -> some View {
+	actionButton(title, image: image, color: Color(.systemOrange), action: action)
 }
 
-public func dangerButton(_ title: String, action: @escaping () -> Void) -> some View {
-	actionButton(title, color: Color(.systemRed), action: action)
+public func dangerButton(_ title: String, image: String? = nil, action: @escaping () -> Void) -> some View {
+	actionButton(title, image: image, color: Color(.systemRed), action: action)
 }
 
-public func successButton(_ title: String, action: @escaping () -> Void) -> some View {
-	actionButton(title, color: Color(.systemGreen), action: action)
+public func successButton(_ title: String, image: String? = nil, action: @escaping () -> Void) -> some View {
+	actionButton(title, image: image, color: Color(.systemGreen), action: action)
 }
