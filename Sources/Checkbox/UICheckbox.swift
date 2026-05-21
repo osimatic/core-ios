@@ -13,12 +13,13 @@ public final class UICheckbox: UIView {
 	private let label: String
 	private let vertical: Bool
 	private var isUpdatingFromBinding = false
-	private lazy var hosting = UIHostingController(rootView: makeView())
+	private var hosting: UIHostingController<CheckboxView>!
 
 	public init(label: String, vertical: Bool = false) {
 		self.label = label
 		self.vertical = vertical
 		super.init(frame: .zero)
+		hosting = UIHostingController(rootView: makeView())
 		hosting.view.backgroundColor = .clear
 		addSubview(hosting.view)
 		hosting.view.translatesAutoresizingMaskIntoConstraints = false
@@ -33,7 +34,7 @@ public final class UICheckbox: UIView {
 	required init?(coder: NSCoder) { fatalError() }
 
 	private func makeView() -> CheckboxView {
-		CheckboxView(label, isChecked: Binding(
+		CheckboxView(label, isChecked: Binding<Bool>(
 			get: { [unowned self] in self.isChecked },
 			set: { [weak self] newValue in
 				guard let self else { return }

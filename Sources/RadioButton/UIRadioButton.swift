@@ -11,14 +11,15 @@ public final class UIRadioButton<Tag: Hashable>: UIView {
 	public var onChange: ((Tag?) -> Void)?
 
 	private let label: String
-	private let tag: Tag
+	private let radioTag: Tag
 	private var isUpdatingFromBinding = false
-	private lazy var hosting = UIHostingController(rootView: makeView())
+	private var hosting: UIHostingController<RadioButtonView<Tag>>!
 
 	public init(label: String, tag: Tag) {
 		self.label = label
-		self.tag = tag
+		self.radioTag = tag
 		super.init(frame: .zero)
+		hosting = UIHostingController(rootView: makeView())
 		hosting.view.backgroundColor = .clear
 		addSubview(hosting.view)
 		hosting.view.translatesAutoresizingMaskIntoConstraints = false
@@ -33,7 +34,7 @@ public final class UIRadioButton<Tag: Hashable>: UIView {
 	required init?(coder: NSCoder) { fatalError() }
 
 	private func makeView() -> RadioButtonView<Tag> {
-		RadioButtonView(label, tag: tag, selection: Binding(
+		RadioButtonView(label, tag: radioTag, selection: Binding<Tag?>(
 			get: { [unowned self] in self.selection },
 			set: { [weak self] newValue in
 				guard let self else { return }
