@@ -29,15 +29,15 @@ public struct RadioButtonView<Tag: Hashable>: View {
 			}
 		}
 		.buttonStyle(.plain)
-		.frame(height: 30)
 	}
 
 	// MARK: - Group
 
-	@ViewBuilder
 	public static func vertical(_ opts: [(tag: Tag, label: String)], selection: Binding<Tag?>) -> some View {
-		ForEach(Array(opts.enumerated()), id: \.offset) { (_, o) in
-			RadioButtonView(o.label, tag: o.tag, selection: selection)
+		VStack(spacing: 4) {
+			ForEach(Array(opts.enumerated()), id: \.offset) { (_, o) in
+				RadioButtonView(o.label, tag: o.tag, selection: selection)
+			}
 		}
 	}
 

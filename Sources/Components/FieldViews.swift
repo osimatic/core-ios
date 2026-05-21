@@ -5,9 +5,16 @@ import UIKit
 
 public struct Card<Content: View>: View {
 	@ViewBuilder public let content: Content
+	private let background: Color
+
+	public init(@ViewBuilder _ content: () -> Content, background: Color = Color(.systemBackground)) {
+		self.content = content()
+		self.background = background
+	}
 
 	public init(@ViewBuilder content: () -> Content) {
 		self.content = content()
+		self.background = Color(.systemBackground)
 	}
 
 	public var body: some View {
@@ -16,7 +23,7 @@ public struct Card<Content: View>: View {
 		}
 		.padding(14)
 		.frame(maxWidth: .infinity, alignment: .leading)
-		.background(Color(.systemBackground))
+		.background(background)
 		.cornerRadius(10)
 		.shadow(color: Color.black.opacity(0.06), radius: 3, x: 0, y: 1)
 	}
