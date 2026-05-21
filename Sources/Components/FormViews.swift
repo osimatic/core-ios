@@ -5,6 +5,7 @@ import UIKit
 
 public func inputField(_ value: Binding<String>, placeholder: String = "") -> some View {
 	TextField(placeholder, text: value)
+		.font(.system(size: 13))
 		.textFieldStyle(.roundedBorder)
 }
 
@@ -52,7 +53,7 @@ public func dropDownField(
 public func checkboxField(_ label: String, isChecked: Binding<Bool>) -> some View {
 	HStack {
 		CheckboxView(isChecked: isChecked).frame(width: 24, height: 24)
-		Text(label).font(.system(size: 14))
+		Text(label).font(.system(size: 14)).foregroundColor(.secondary)
 	}
 }
 
@@ -65,15 +66,17 @@ private func radioRow<T: Hashable>(_ label: String, tag: T, selection: Binding<T
 		HStack(spacing: 8) {
 			SwiftUI.Image(systemName: selection.wrappedValue == tag ? "largecircle.fill.circle" : "circle")
 				.foregroundColor(selection.wrappedValue == tag ? .accentColor : .secondary)
-			Text(label).font(.system(size: 14)).foregroundColor(.primary)
+			Text(label).font(.system(size: 14)).foregroundColor(.secondary)
 		}
 	}
 	.buttonStyle(.plain)
-	.frame(height: 30)
+	.frame(height: 24)
 }
 
 @ViewBuilder public func radioButtonsGroup<T: Hashable>(_ opts: [(tag: T, label: String)], selection: Binding<T?>) -> some View {
-	ForEach(Array(opts.enumerated()), id: \.offset) { (_, o) in radioRow(o.label, tag: o.tag, selection: selection) }
+	VStack(spacing: 2) {
+		ForEach(Array(opts.enumerated()), id: \.offset) { (_, o) in radioRow(o.label, tag: o.tag, selection: selection) }
+	}
 }
 @ViewBuilder public func radioButtonsGroup<T: Hashable>(_ opts: [(tag: T, label: String)], selection: Binding<T>) -> some View {
 	radioButtonsGroup(opts, selection: optBinding(selection))
