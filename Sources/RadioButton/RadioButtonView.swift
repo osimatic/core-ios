@@ -1,62 +1,72 @@
 import SwiftUI
-import UIKit
 
-public struct RadioButtonView<Tag: Hashable>: UIViewRepresentable {
-	@Binding private var selection: Tag?
+public struct RadioButtonView<Tag: Hashable>: View {
+	private let label: String
 	private let tag: Tag
-	private let title: String
+	@Binding private var selection: Tag?
 
-	fileprivate var titleColor: UIColor = .darkGray
-	fileprivate var font: UIFont = .systemFont(ofSize: 16)
-	fileprivate var stringTag: String?
-
-	public init(title: String, tag: Tag, selection: Binding<Tag?>) {
-		self.title = title
+	public init(_ label: String, tag: Tag, selection: Binding<Tag?>) {
+		self.label = label
 		self.tag = tag
 		self._selection = selection
 	}
 
-	public init(title: String, tag: Tag, selection: Binding<Tag>) {
-		self.title = title
+	public init(_ label: String, tag: Tag, selection: Binding<Tag>) {
+		self.label = label
 		self.tag = tag
 		self._selection = Binding<Tag?>(
 			get: { selection.wrappedValue },
-			set: { if let new = $0 { selection.wrappedValue = new } }
+			set: { if let v = $0 { selection.wrappedValue = v } }
 		)
 	}
 
-	public func makeCoordinator() -> Coordinator {
-		Coordinator(self)
-	}
-
-	public func makeUIView(context: Context) -> UIRadioButton {
-		let radio = UIRadioButton(frame: .zero)
-		radio.onSelect = { _ in
-			context.coordinator.parent.selection = context.coordinator.parent.tag
+	public var body: some View {
+		Button { selection = tag } label: {
+			HStack(spacing: 8) {
+				Image(systemName: selection == tag ? "largecircle.fill.circle" : "circle")
+					.foregroundColor(selection == tag ? .accentColor : .secondary)
+				Text(label).font(.system(size: 14)).foregroundColor(.primary)
+			}
 		}
-		return radio
+		.buttonStyle(.plain)
+		.frame(height: 30)
 	}
 
-	public func updateUIView(_ uiView: UIRadioButton, context: Context) {
-		context.coordinator.parent = self
-		uiView.setTitle(title, for: .normal)
-		uiView.setTitleColor(titleColor, for: .normal)
-		uiView.titleLabel?.font = font
-		uiView.stringTag = stringTag
-		let shouldBeSelected = (selection == tag)
-		if uiView.isSelected != shouldBeSelected {
-			uiView.isSelected = shouldBeSelected
+	// MARK: - Group
+
+	@ViewBuilder
+	public static func vertical(_ opts: [(tag: Tag, label: String)], selection: Binding<Tag?>) -> some View {
+		ForEach(Array(opts.enumerated()), id: \.offset) { (_, o) in
+			RadioButtonView(o.label, tag: o.tag, selection: selection)
 		}
 	}
 
-	public class Coordinator {
-		var parent: RadioButtonView
-		init(_ parent: RadioButtonView) { self.parent = parent }
+	@ViewBuilder
+	public static func vertical(_ opts: [(tag: Tag, label: String)], selection: Binding<Tag>) -> some View {
+		vertical(opts, selection: Binding<Tag?>(
+			get: { selection.wrappedValue },
+			set: { if let v = $0 { selection.wrappedValue = v } }
+		))
+	}
+
+	public static func horizontal(_ opts: [(tag: Tag, label: String)], selection: Binding<Tag?>) -> some View {
+		HStack(spacing: 16) {
+			ForEach(Array(opts.enumerated()), id: \.offset) { (_, o) in
+				RadioButtonView(o.label, tag: o.tag, selection: selection)
+			}
+		}.frame(height: 30)
+	}
+
+	public static func horizontal(_ opts: [(tag: Tag, label: String)], selection: Binding<Tag>) -> some View {
+		horizontal(opts, selection: Binding<Tag?>(
+			get: { selection.wrappedValue },
+			set: { (v: Tag?) in if let v { selection.wrappedValue = v } }
+		))
 	}
 }
 
-public extension RadioButtonView {
-	func titleColor(_ value: UIColor) -> Self { var copy = self; copy.titleColor = value; return copy }
-	func font(_ value: UIFont) -> Self { var copy = self; copy.font = value; return copy }
-	func stringTag(_ value: String?) -> Self { var copy = self; copy.stringTag = value; return copy }
+public extension RadioButtonView where Tag == Bool {
+	static func yesNo(_ selection: Binding<Bool>, trueLabel: String = "Yes", falseLabel: String = "No") -> some View {
+		RadioButtonView<Bool>.horizontal([(tag: false, label: falseLabel), (tag: true, label: trueLabel)], selection: selection)
+	}
 }

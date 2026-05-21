@@ -1,64 +1,36 @@
 import SwiftUI
-import UIKit
 
-public struct CheckboxView: UIViewRepresentable {
+public struct CheckboxView: View {
+	private let label: String
 	@Binding private var isChecked: Bool
+	private let vertical: Bool
 
-	fileprivate var checkedBackgroundColor: UIColor = #colorLiteral(red: 0.1450980392, green: 0.3450980392, blue: 0.5098039216, alpha: 1)
-	fileprivate var uncheckedBackgroundColor: UIColor = .white
-	fileprivate var checkedBorderColor: UIColor = .black
-	fileprivate var uncheckedBorderColor: UIColor = .black
-	fileprivate var checkedImage: UIImage? = UIImage(systemName: "checkmark")
-	fileprivate var imageTint: UIColor? = .white
-	fileprivate var checkedViewInsets: UIEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-	fileprivate var hitRadiusOffset: CGFloat = 10
-
-	public init(isChecked: Binding<Bool>) {
+	public init(_ label: String, isChecked: Binding<Bool>, vertical: Bool = false) {
+		self.label = label
 		self._isChecked = isChecked
+		self.vertical = vertical
 	}
 
-	public func makeCoordinator() -> Coordinator {
-		Coordinator(self)
-	}
-
-	public func makeUIView(context: Context) -> Checkbox {
-		let checkbox = Checkbox(frame: .zero)
-		checkbox.addTarget(context.coordinator, action: #selector(Coordinator.valueChanged(_:)), for: .valueChanged)
-		return checkbox
-	}
-
-	public func updateUIView(_ uiView: Checkbox, context: Context) {
-		context.coordinator.parent = self
-		uiView.checkedBackgroundColor = checkedBackgroundColor
-		uiView.uncheckedBackgroundColor = uncheckedBackgroundColor
-		uiView.checkedBorderColor = checkedBorderColor
-		uiView.uncheckedBorderColor = uncheckedBorderColor
-		uiView.checkedImage = checkedImage
-		uiView.imageTint = imageTint
-		uiView.checkedViewInsets = checkedViewInsets
-		uiView.hitRadiusOffset = hitRadiusOffset
-		if uiView.isChecked != isChecked {
-			uiView.isChecked = isChecked
+	public var body: some View {
+		Button { isChecked.toggle() } label: {
+			if vertical {
+				VStack(spacing: 4) { icon; text }
+			} else {
+				HStack(spacing: 8) { icon; text }
+			}
 		}
+		.buttonStyle(.plain)
 	}
 
-	public class Coordinator {
-		var parent: CheckboxView
-		init(_ parent: CheckboxView) { self.parent = parent }
-
-		@objc func valueChanged(_ sender: Checkbox) {
-			parent.isChecked = sender.isChecked
-		}
+	private var icon: some View {
+		Image(systemName: isChecked ? "checkmark.square.fill" : "square")
+			.foregroundColor(isChecked ? .accentColor : .secondary)
+			.font(.system(size: vertical ? 22 : 20))
 	}
-}
 
-public extension CheckboxView {
-	func checkedBackgroundColor(_ value: UIColor) -> Self { var copy = self; copy.checkedBackgroundColor = value; return copy }
-	func uncheckedBackgroundColor(_ value: UIColor) -> Self { var copy = self; copy.uncheckedBackgroundColor = value; return copy }
-	func checkedBorderColor(_ value: UIColor) -> Self { var copy = self; copy.checkedBorderColor = value; return copy }
-	func uncheckedBorderColor(_ value: UIColor) -> Self { var copy = self; copy.uncheckedBorderColor = value; return copy }
-	func checkedImage(_ value: UIImage?) -> Self { var copy = self; copy.checkedImage = value; return copy }
-	func imageTint(_ value: UIColor?) -> Self { var copy = self; copy.imageTint = value; return copy }
-	func checkedViewInsets(_ value: UIEdgeInsets) -> Self { var copy = self; copy.checkedViewInsets = value; return copy }
-	func hitRadiusOffset(_ value: CGFloat) -> Self { var copy = self; copy.hitRadiusOffset = value; return copy }
+	private var text: some View {
+		Text(label)
+			.font(.system(size: vertical ? 11 : 14))
+			.foregroundColor(vertical ? .secondary : .primary)
+	}
 }

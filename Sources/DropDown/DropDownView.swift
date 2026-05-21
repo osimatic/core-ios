@@ -143,4 +143,16 @@ public extension DropDownView {
 	func onListDidAppear(_ handler: @escaping () -> Void) -> Self { var copy = self; copy.onListDidAppear = handler; return copy }
 	func onListWillDisappear(_ handler: @escaping () -> Void) -> Self { var copy = self; copy.onListWillDisappear = handler; return copy }
 	func onListDidDisappear(_ handler: @escaping () -> Void) -> Self { var copy = self; copy.onListDidDisappear = handler; return copy }
+
+	public static func field(
+		_ options: [DropDownItem],
+		selection: Binding<DropDownItem?>,
+		placeholder: String,
+		listHeight: CGFloat = UIScreen.main.bounds.height * 0.5
+	) -> some View {
+		DropDownView(options: options, selection: selection, placeholder: placeholder)
+			.listHeight(listHeight)
+			.frame(maxWidth: .infinity)
+			.frame(height: 40)
+	}
 }
