@@ -37,3 +37,15 @@ public func actionButton(_ title: String, color: Color = Color(.systemBlue), act
 	.foregroundColor(.white)
 	.cornerRadius(8)
 }
+
+public func warningButton(_ title: String, action: @escaping () -> Void) -> some View {
+	actionButton(title, color: Color(.systemOrange), action: action)
+}
+
+public func dangerButton(_ title: String, action: @escaping () -> Void) -> some View {
+	actionButton(title, color: Color(.systemRed), action: action)
+}
+
+public func successButton(_ title: String, action: @escaping () -> Void) -> some View {
+	actionButton(title, color: Color(.systemGreen), action: action)
+}
