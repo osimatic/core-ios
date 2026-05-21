@@ -34,7 +34,7 @@ public struct Card<Content: View>: View {
 public func fieldLabel(_ text: String) -> some View {
 	Text(text)
 		.font(.system(size: 14))
-		.foregroundColor(.primary)
+		.foregroundColor(.secondary)
 }
 
 public func fieldSubLabel(_ text: String) -> some View {
