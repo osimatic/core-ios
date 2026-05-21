@@ -56,9 +56,39 @@ public func checkboxField(_ label: String, isChecked: Binding<Bool>) -> some Vie
 	}
 }
 
-public func yesNoRadioButtons(_ selection: Binding<Bool>, trueLabel: String = "Yes", falseLabel: String = "No") -> some View {
-	HStack(spacing: 12) {
-		RadioButtonView(title: falseLabel, tag: false, selection: selection).frame(height: 30)
-		RadioButtonView(title: trueLabel, tag: true, selection: selection).frame(height: 30)
+private func optBinding<T>(_ b: Binding<T>) -> Binding<T?> {
+	Binding(get: { b.wrappedValue }, set: { if let v = $0 { b.wrappedValue = v } })
+}
+
+private func radioRow<T: Hashable>(_ label: String, tag: T, selection: Binding<T?>) -> some View {
+	Button { selection.wrappedValue = tag } label: {
+		HStack(spacing: 8) {
+			Image(systemName: selection.wrappedValue == tag ? "largecircle.fill.circle" : "circle")
+				.foregroundColor(selection.wrappedValue == tag ? .accentColor : .secondary)
+			Text(label).font(.system(size: 14)).foregroundColor(.primary)
+		}
 	}
+	.buttonStyle(.plain)
+	.frame(height: 30)
+}
+
+@ViewBuilder public func radioButtonsGroup<T: Hashable>(_ opts: [(tag: T, label: String)], selection: Binding<T?>) -> some View {
+	ForEach(Array(opts.enumerated()), id: \.offset) { (_, o) in radioRow(o.label, tag: o.tag, selection: selection) }
+}
+@ViewBuilder public func radioButtonsGroup<T: Hashable>(_ opts: [(tag: T, label: String)], selection: Binding<T>) -> some View {
+	radioButtonsGroup(opts, selection: optBinding(selection))
+}
+
+public func radioButtonsGroupHStack<T: Hashable>(_ opts: [(tag: T, label: String)], selection: Binding<T?>) -> some View {
+	HStack(spacing: 16) { ForEach(Array(opts.enumerated()), id: \.offset) { (_, o) in radioRow(o.label, tag: o.tag, selection: selection) } }.frame(height: 30)
+}
+public func radioButtonsGroupHStack<T: Hashable>(_ opts: [(tag: T, label: String)], selection: Binding<T>) -> some View {
+	radioButtonsGroupHStack(opts, selection: optBinding(selection))
+}
+
+public func radioButtonItem<T: Hashable>(_ label: String, tag: T, selection: Binding<T?>) -> some View { radioRow(label, tag: tag, selection: selection) }
+public func radioButtonItem<T: Hashable>(_ label: String, tag: T, selection: Binding<T>) -> some View { radioRow(label, tag: tag, selection: optBinding(selection)) }
+
+public func yesNoRadioButtons(_ selection: Binding<Bool>, trueLabel: String = "Yes", falseLabel: String = "No") -> some View {
+	radioButtonsGroupHStack([(tag: false, label: falseLabel), (tag: true, label: trueLabel)], selection: selection)
 }

@@ -44,6 +44,15 @@ public extension UIView {
 	}
 }
 
+public extension UIViewController {
+	func showLoader() {
+		(navigationController?.view ?? view).showLoader()
+	}
+	func hideLoader() {
+		(navigationController?.view ?? view).hideLoader()
+	}
+}
+
 class BlurLoader: UIView {
 	var blurEffectView: UIVisualEffectView?;
 
