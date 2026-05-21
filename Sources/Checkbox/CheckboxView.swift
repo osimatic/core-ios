@@ -23,14 +23,14 @@ public struct CheckboxView: View {
 	}
 
 	private var icon: some View {
-		Image(systemName: isChecked ? "checkmark.square.fill" : "square")
-			.foregroundColor(isChecked ? .accentColor : .secondary)
+		SwiftUI.Image(systemName: isChecked ? "checkmark.square.fill" : "square")
+			.foregroundColor(isChecked ? Color.accentColor : Color.secondary)
 			.font(.system(size: vertical ? 22 : 20))
 	}
 
 	private var text: some View {
 		Text(label)
 			.font(.system(size: vertical ? 11 : 14))
-			.foregroundColor(vertical ? .secondary : .primary)
+			.foregroundColor(vertical ? Color.secondary : Color.primary)
 	}
 }

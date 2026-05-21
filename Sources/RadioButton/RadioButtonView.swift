@@ -23,9 +23,9 @@ public struct RadioButtonView<Tag: Hashable>: View {
 	public var body: some View {
 		Button { selection = tag } label: {
 			HStack(spacing: 8) {
-				Image(systemName: selection == tag ? "largecircle.fill.circle" : "circle")
-					.foregroundColor(selection == tag ? .accentColor : .secondary)
-				Text(label).font(.system(size: 14)).foregroundColor(.primary)
+				SwiftUI.Image(systemName: selection == tag ? "largecircle.fill.circle" : "circle")
+					.foregroundColor(selection == tag ? Color.accentColor : Color.secondary)
+				Text(label).font(.system(size: 14)).foregroundColor(Color.primary)
 			}
 		}
 		.buttonStyle(.plain)
