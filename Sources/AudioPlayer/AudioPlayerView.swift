@@ -10,7 +10,7 @@ public struct AudioPlayerView: View {
 	public var body: some View {
 		HStack(spacing: 12) {
 			Button(action: { player.togglePlay() }) {
-				Image(uiImage: UIImage(named: player.isPlaying ? "audioplayer_pause" : "audioplayer_play", in: .module, with: nil) ?? UIImage())
+				SwiftUI.Image(uiImage: UIImage(named: player.isPlaying ? "audioplayer_pause" : "audioplayer_play", in: .module, with: nil) ?? UIImage())
 					.resizable()
 					.scaledToFit()
 					.frame(width: 36, height: 36)
