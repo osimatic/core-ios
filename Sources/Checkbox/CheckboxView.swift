@@ -15,6 +15,7 @@ public struct CheckboxView: View {
 		Button { isChecked.toggle() } label: {
 			if vertical {
 				VStack(spacing: 4) { icon; text }
+					.frame(maxWidth: .infinity)
 			} else {
 				HStack(spacing: 8) { icon; text }
 			}
