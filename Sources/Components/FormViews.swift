@@ -49,28 +49,35 @@ public func dropDownField(
 
 // MARK: - Checkbox / Radio
 
-public func checkboxField(_ label: String, isChecked: Binding<Bool>) -> some View {
+@ViewBuilder
+private func checkboxLayout<Content: View>(vertical: Bool, @ViewBuilder content: () -> Content) -> some View {
+	if vertical {
+		VStack(spacing: 4) { content() }
+	} else {
+		HStack(spacing: 8) { content() }
+	}
+}
+
+private func checkboxCore(_ label: String, isChecked: Binding<Bool>, vertical: Bool) -> some View {
 	Button { isChecked.wrappedValue.toggle() } label: {
-		HStack(spacing: 8) {
-			Image(systemName: isChecked.wrappedValue ? "checkmark.square.fill" : "square")
+		checkboxLayout(vertical: vertical) {
+			SwiftUI.Image(systemName: isChecked.wrappedValue ? "checkmark.square.fill" : "square")
 				.foregroundColor(isChecked.wrappedValue ? .accentColor : .secondary)
-				.font(.system(size: 20))
-			Text(label).font(.system(size: 14)).foregroundColor(.primary)
+				.font(.system(size: vertical ? 22 : 20))
+			Text(label)
+				.font(.system(size: vertical ? 11 : 14))
+				.foregroundColor(vertical ? .secondary : .primary)
 		}
 	}
 	.buttonStyle(.plain)
 }
 
+public func checkboxField(_ label: String, isChecked: Binding<Bool>) -> some View {
+	checkboxCore(label, isChecked: isChecked, vertical: false)
+}
+
 public func checkboxFieldVertical(_ label: String, isChecked: Binding<Bool>) -> some View {
-	Button { isChecked.wrappedValue.toggle() } label: {
-		VStack(spacing: 4) {
-			Image(systemName: isChecked.wrappedValue ? "checkmark.square.fill" : "square")
-				.foregroundColor(isChecked.wrappedValue ? .accentColor : .secondary)
-				.font(.system(size: 22))
-			Text(label).font(.system(size: 11)).foregroundColor(.secondary)
-		}
-	}
-	.buttonStyle(.plain)
+	checkboxCore(label, isChecked: isChecked, vertical: true)
 }
 
 private func optBinding<T>(_ b: Binding<T>) -> Binding<T?> {
@@ -80,7 +87,7 @@ private func optBinding<T>(_ b: Binding<T>) -> Binding<T?> {
 private func radioRow<T: Hashable>(_ label: String, tag: T, selection: Binding<T?>) -> some View {
 	Button { selection.wrappedValue = tag } label: {
 		HStack(spacing: 8) {
-			Image(systemName: selection.wrappedValue == tag ? "largecircle.fill.circle" : "circle")
+			SwiftUI.Image(systemName: selection.wrappedValue == tag ? "largecircle.fill.circle" : "circle")
 				.foregroundColor(selection.wrappedValue == tag ? .accentColor : .secondary)
 			Text(label).font(.system(size: 14)).foregroundColor(.primary)
 		}
