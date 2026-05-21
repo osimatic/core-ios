@@ -49,14 +49,14 @@ public extension String {
 			string = String(format:"<span style=\"font-family: '-apple-system', 'HelveticaNeue'; font-size: \(font.pointSize)\">%@</span>", self);
 		}
 
-		return try! NSAttributedString(
+		return (try? NSAttributedString(
 			data: string.data(using: String.Encoding.unicode, allowLossyConversion: true)!,
 			options: [
 				NSAttributedString.DocumentReadingOptionKey.documentType: NSAttributedString.DocumentType.html,
 				NSAttributedString.DocumentReadingOptionKey.characterEncoding: String.Encoding.utf8.rawValue
 			],
 			documentAttributes: nil
-		);
+		)) ?? NSAttributedString(string: self);
 	}
 
 	/*
