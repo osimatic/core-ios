@@ -57,12 +57,19 @@ public func valueText(_ attr: AttributedString) -> some View {
 	Text(attr).font(.system(size: 14, weight: .medium))
 }
 
+@ViewBuilder
+public func nbItemsCard<Content: View>(background: Color = Color(UIColor.secondarySystemBackground), @ViewBuilder _ content: () -> Content) -> some View {
+	Card({ content() }, background: background)
+		.padding(.horizontal, 16)
+		.padding(.vertical, 6)
+}
+
 public func nbItemsText(_ text: String, color: Color = .secondary) -> some View {
 	Text(text)
 		.font(.system(size: 14))
 		.foregroundColor(color)
 		.multilineTextAlignment(.center)
-		.padding(.vertical, 4)
+		.padding(.vertical, 2)
 }
 
 // MARK: - Horizontal fields
