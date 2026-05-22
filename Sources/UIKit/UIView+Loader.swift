@@ -46,10 +46,18 @@ public extension UIView {
 
 public extension UIViewController {
 	func showLoader() {
-		(navigationController?.view ?? view).showLoader()
+		if NSStringFromClass(type(of: self)).contains("UIHostingController") {
+			(view.window ?? navigationController?.view ?? view).showLoader()
+		} else {
+			(navigationController?.view ?? view).showLoader()
+		}
 	}
 	func hideLoader() {
-		(navigationController?.view ?? view).hideLoader()
+		if NSStringFromClass(type(of: self)).contains("UIHostingController") {
+			(view.window ?? navigationController?.view ?? view).hideLoader()
+		} else {
+			(navigationController?.view ?? view).hideLoader()
+		}
 	}
 }
 
