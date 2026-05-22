@@ -36,9 +36,24 @@ public extension UIView {
 			if let submitButton = submitButton {
 				submitButton.isEnabled = true;
 			}
-			
+
 			if let blurLoader = self.subviews.first(where: { $0 is BlurLoader }) {
 				blurLoader.removeFromSuperview();
+			}
+		};
+	}
+
+	func showCornerLoader() {
+		DispatchQueue.main.async {
+			guard !self.subviews.contains(where: { $0 is CornerLoader }) else { return };
+			let cornerLoader = CornerLoader(frame: self.frame);
+			self.addSubview(cornerLoader);
+		};
+	}
+	func hideCornerLoader() {
+		DispatchQueue.main.async {
+			if let cornerLoader = self.subviews.first(where: { $0 is CornerLoader }) {
+				cornerLoader.removeFromSuperview();
 			}
 		};
 	}
@@ -52,12 +67,50 @@ public extension UIViewController {
 			(navigationController?.view ?? view).showLoader()
 		}
 	}
+
 	func hideLoader() {
 		if NSStringFromClass(type(of: self)).contains("UIHostingController") {
 			(view.window ?? navigationController?.view ?? view).hideLoader()
 		} else {
 			(navigationController?.view ?? view).hideLoader()
 		}
+	}
+
+	func showCornerLoader() {
+		if NSStringFromClass(type(of: self)).contains("UIHostingController") {
+			(view.window ?? navigationController?.view ?? view).showCornerLoader()
+		} else {
+			(navigationController?.view ?? view).showCornerLoader()
+		}
+	}
+
+	func hideCornerLoader() {
+		if NSStringFromClass(type(of: self)).contains("UIHostingController") {
+			(view.window ?? navigationController?.view ?? view).hideCornerLoader()
+		} else {
+			(navigationController?.view ?? view).hideCornerLoader()
+		}
+	}
+}
+
+class CornerLoader: UIView {
+	override init(frame: CGRect) {
+		super.init(frame: frame);
+		isUserInteractionEnabled = false;
+		backgroundColor = .clear;
+
+		let activityIndicator = UIActivityIndicatorView(style: .medium);
+		activityIndicator.translatesAutoresizingMaskIntoConstraints = false;
+		addSubview(activityIndicator);
+		NSLayoutConstraint.activate([
+			activityIndicator.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+			activityIndicator.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20)
+		]);
+		activityIndicator.startAnimating();
+	}
+
+	required init?(coder aDecoder: NSCoder) {
+		fatalError("init(coder:) has not been implemented");
 	}
 }
 
