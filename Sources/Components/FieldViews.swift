@@ -58,10 +58,15 @@ public func valueText(_ attr: AttributedString) -> some View {
 }
 
 @ViewBuilder
-public func nbItemsCard<Content: View>(background: Color = Color(UIColor.secondarySystemBackground), @ViewBuilder _ content: () -> Content) -> some View {
-	Card({ content() }, background: background)
-		.padding(.horizontal, 16)
-		.padding(.vertical, 6)
+public func nbItemsCard<Content: View>(background: Color = Color(UIColor.systemGray5), @ViewBuilder _ content: () -> Content) -> some View {
+	Card({
+		VStack(alignment: .center, spacing: 0) {
+			content()
+		}
+		.frame(maxWidth: .infinity)
+	}, background: background)
+	.padding(.horizontal, 16)
+	.padding(.vertical, 4)
 }
 
 public func nbItemsText(_ text: String, color: Color = .secondary) -> some View {
