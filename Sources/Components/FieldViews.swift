@@ -6,22 +6,25 @@ import UIKit
 public struct Card<Content: View>: View {
 	@ViewBuilder public let content: Content
 	private let background: Color
+	private let innerPadding: CGFloat
 
-	public init(@ViewBuilder _ content: () -> Content, background: Color = Color(.systemBackground)) {
+	public init(@ViewBuilder _ content: () -> Content, background: Color = Color(.systemBackground), innerPadding: CGFloat = 14) {
 		self.content = content()
 		self.background = background
+		self.innerPadding = innerPadding
 	}
 
 	public init(@ViewBuilder content: () -> Content) {
 		self.content = content()
 		self.background = Color(.systemBackground)
+		self.innerPadding = 14
 	}
 
 	public var body: some View {
 		VStack(alignment: .leading, spacing: 10) {
 			content
 		}
-		.padding(14)
+		.padding(innerPadding)
 		.frame(maxWidth: .infinity, alignment: .leading)
 		.background(background)
 		.cornerRadius(10)
@@ -64,7 +67,7 @@ public func nbItemsCard<Content: View>(background: Color = Color(UIColor.systemG
 			content()
 		}
 		.frame(maxWidth: .infinity)
-	}, background: background)
+	}, background: background, innerPadding: 8)
 	.padding(.horizontal, 16)
 	.padding(.vertical, 4)
 }
@@ -74,7 +77,7 @@ public func nbItemsText(_ text: String, color: Color = .secondary) -> some View 
 		.font(.system(size: 14))
 		.foregroundColor(color)
 		.multilineTextAlignment(.center)
-		.padding(.vertical, 2)
+		.padding(.vertical, 1)
 }
 
 // MARK: - Horizontal fields
