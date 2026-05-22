@@ -32,3 +32,18 @@ public func passwordField(_ text: Binding<String>, show: Binding<Bool>, placehol
 	.background(Color(.systemBackground))
 	.overlay(RoundedRectangle(cornerRadius: 6).stroke(Color(.systemGray4)))
 }
+
+// MARK: - FormContainer
+
+// Wrapper utilisé avec UIHostingController pour forcer SwiftUI à réinitialiser
+// les @State quand rootView est remplacé : changer l'id détruit l'ancienne vue
+// et en crée une nouvelle avec les bonnes valeurs initiales.
+public struct FormContainer<T: View>: View {
+	public let id: UUID
+	public let content: T
+	public var body: some View { content.id(id) }
+	public init(id: UUID, content: T) {
+		self.id = id
+		self.content = content
+	}
+}
