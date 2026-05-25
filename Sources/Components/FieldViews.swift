@@ -8,7 +8,7 @@ public struct Card<Content: View>: View {
 	private let background: Color
 	private let innerPadding: CGFloat
 
-	public init(@ViewBuilder _ content: () -> Content, background: Color = Color(.systemBackground), innerPadding: CGFloat = 14) {
+	public init(@ViewBuilder _ content: () -> Content, background: Color = Color(.systemBackground), innerPadding: CGFloat = 8) {
 		self.content = content()
 		self.background = background
 		self.innerPadding = innerPadding
@@ -27,8 +27,8 @@ public struct Card<Content: View>: View {
 		.padding(innerPadding)
 		.frame(maxWidth: .infinity, alignment: .leading)
 		.background(background)
-		.cornerRadius(10)
-		.shadow(color: Color.black.opacity(0.06), radius: 3, x: 0, y: 1)
+		.cornerRadius(5)
+		//.shadow(color: Color.black.opacity(0.06), radius: 3, x: 0, y: 1)
 	}
 }
 
