@@ -1,37 +1,6 @@
 import SwiftUI
 import UIKit
 
-// MARK: - Card
-
-public struct Card<Content: View>: View {
-	@ViewBuilder public let content: Content
-	private let background: Color
-	private let innerPadding: CGFloat
-
-	public init(@ViewBuilder _ content: () -> Content, background: Color = Color(.systemBackground), innerPadding: CGFloat = 8) {
-		self.content = content()
-		self.background = background
-		self.innerPadding = innerPadding
-	}
-
-	public init(@ViewBuilder content: () -> Content) {
-		self.content = content()
-		self.background = Color(.systemBackground)
-		self.innerPadding = 14
-	}
-
-	public var body: some View {
-		VStack(alignment: .leading, spacing: 10) {
-			content
-		}
-		.padding(innerPadding)
-		.frame(maxWidth: .infinity, alignment: .leading)
-		.background(background)
-		.cornerRadius(5)
-		//.shadow(color: Color.black.opacity(0.06), radius: 3, x: 0, y: 1)
-	}
-}
-
 // MARK: - Text helpers
 
 public func fieldLabel(_ text: String) -> some View {
@@ -58,26 +27,6 @@ public func valueText(_ text: String, color: Color? = nil) -> some View {
 
 public func valueText(_ attr: AttributedString) -> some View {
 	Text(attr).font(.system(size: 14, weight: .medium))
-}
-
-@ViewBuilder
-public func nbItemsCard<Content: View>(background: Color = Color(UIColor.systemGray5), @ViewBuilder _ content: () -> Content) -> some View {
-	Card({
-		VStack(alignment: .center, spacing: 0) {
-			content()
-		}
-		.frame(maxWidth: .infinity)
-	}, background: background, innerPadding: 8)
-	.padding(.horizontal, 16)
-	.padding(.vertical, 4)
-}
-
-public func nbItemsText(_ text: String, color: Color = .secondary) -> some View {
-	Text(text)
-		.font(.system(size: 14))
-		.foregroundColor(color)
-		.multilineTextAlignment(.center)
-		.padding(.vertical, 1)
 }
 
 // MARK: - Horizontal fields

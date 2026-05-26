@@ -51,12 +51,12 @@ public struct ValueCard {
 
 	@ViewBuilder
 	public static func card(_ rows: [LabeledValue], title: String = "", background: Color = Color(.systemBackground)) -> some View {
-		Card({
+		Card(background: background) {
 			if !title.isEmpty {
 				Text(title).font(.system(size: 14, weight: .semibold))
 			}
 			ForEach(rows) { Self.row($0) }
-		}, background: background)
+		}
 	}
 
 	@ViewBuilder
