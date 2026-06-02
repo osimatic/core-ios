@@ -75,4 +75,12 @@ public class Device {
 		return traitCollection.userInterfaceStyle == .dark;
 	}*/
 
+	/*
+	 * Returns true if the device currently has a usable network connection
+	 * (Wi-Fi or cellular). Convenience shortcut for Reachability.isConnectedToNetwork().
+	 */
+	public static func isOnline() -> Bool {
+		return Reachability().isConnectedToNetwork();
+	}
+
 }
