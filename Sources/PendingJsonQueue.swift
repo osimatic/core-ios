@@ -5,8 +5,12 @@ import Foundation
  * Items are enqueued as JSON strings and dequeued in insertion order.
  * Designed for offline operation queues (e.g. pending clockings awaiting network sync).
  *
+ * By default uses UserDefaults.standard. Pass a suiteName to use a separate
+ * UserDefaults suite that survives a removePersistentDomain call on the main bundle —
+ * required for queues that must persist across logout/login cycles.
+ *
  * Usage:
- *   let queue = PendingJsonQueue("pending_clockings")
+ *   let queue = PendingJsonQueue("pending_clockings", suiteName: "com.example.app.offline")
  *   queue.enqueue(["employee_id": "123", "clocking_action": "DEBUT"])
  *   let items = queue.getAll()        // [[String: Any]]
  *   queue.removeFirst()               // after successful sync
@@ -14,15 +18,19 @@ import Foundation
 public class PendingJsonQueue {
 
 	private let storageKey: String;
+	private let defaults: UserDefaults;
 
 	/*
 	 * Creates a queue with the given name.
-	 * The name is used as the UserDefaults storage key.
 	 *
-	 * @param name Unique name identifying this queue.
+	 * @param name      Unique name identifying this queue.
+	 * @param suiteName Optional UserDefaults suite name. Use a custom suite when the queue
+	 *                  must survive a removePersistentDomain call on the main bundle (e.g. on logout).
+	 *                  Defaults to UserDefaults.standard when nil.
 	 */
-	public init(_ name: String) {
+	public init(_ name: String, suiteName: String? = nil) {
 		self.storageKey = "pending_queue_" + name;
+		self.defaults = suiteName.flatMap { UserDefaults(suiteName: $0) } ?? UserDefaults.standard;
 	}
 
 	/*
@@ -94,11 +102,11 @@ public class PendingJsonQueue {
 	// MARK: - Private
 
 	private func loadRaw() -> [String] {
-		return UserDefaults.standard.stringArray(forKey: storageKey) ?? [];
+		return defaults.stringArray(forKey: storageKey) ?? [];
 	}
 
 	private func saveRaw(_ list: [String]) {
-		UserDefaults.standard.set(list, forKey: storageKey);
+		defaults.set(list, forKey: storageKey);
 	}
 
 }
