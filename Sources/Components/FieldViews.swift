@@ -1,6 +1,29 @@
 import SwiftUI
 import UIKit
 
+// MARK: - NSAttributedLabel
+
+public struct NSAttributedLabel: UIViewRepresentable {
+	let attributedString: NSAttributedString
+
+	public init(_ attributedString: NSAttributedString) {
+		self.attributedString = attributedString
+	}
+
+	public func makeUIView(context: Context) -> UILabel {
+		let label = UILabel()
+		label.numberOfLines = 0
+		label.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+		label.setContentHuggingPriority(.required, for: .vertical)
+		label.setContentCompressionResistancePriority(.required, for: .vertical)
+		return label
+	}
+
+	public func updateUIView(_ uiView: UILabel, context: Context) {
+		uiView.attributedText = attributedString
+	}
+}
+
 // MARK: - Text helpers
 
 public func fieldLabel(_ text: String) -> some View {
@@ -53,16 +76,17 @@ public func horizontalField<Content: View>(_ label: String, isSubLabel: Bool = f
 @ViewBuilder
 public func horizontalField(_ label: String, _ ns: NSAttributedString, isSubLabel: Bool = false, labelWidth: CGFloat = 120) -> some View {
 	HStack(alignment: .firstTextBaseline, spacing: 8) {
-		Group { if isSubLabel { fieldSubLabel(label) } else { fieldLabel(label) } }
-			.frame(width: labelWidth, alignment: .trailing)
 		Group {
-			if let attr = try? AttributedString(ns, including: \.uiKit) {
-				valueText(attr)
-			} else {
-				valueText(ns.string)
-			}
-		}
-		.frame(maxWidth: .infinity, alignment: .leading)
+            if isSubLabel {
+                fieldSubLabel(label)
+            }
+            else {
+                fieldLabel(label)
+            }
+        }
+        .frame(width: labelWidth, alignment: .trailing)
+		NSAttributedLabel(ns)
+        .frame(maxWidth: .infinity, alignment: .leading)
 	}
 }
 
@@ -70,7 +94,12 @@ public func horizontalField(_ label: String, _ ns: NSAttributedString, isSubLabe
 
 public func verticalField(_ label: String, _ value: String, isSubLabel: Bool = false) -> some View {
 	VStack(alignment: .leading, spacing: 4) {
-		if isSubLabel { fieldSubLabel(label) } else { fieldLabel(label) }
+		if isSubLabel {
+            fieldSubLabel(label)
+        }
+        else {
+            fieldLabel(label)
+        }
 		multilineText(value)
 	}
 }
