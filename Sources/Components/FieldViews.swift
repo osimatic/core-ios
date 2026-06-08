@@ -102,6 +102,7 @@ public func verticalField(_ label: String, _ value: String, isSubLabel: Bool = f
         }
 		multilineText(value)
 	}
+	.frame(maxWidth: .infinity, alignment: .leading)
 }
 
 @ViewBuilder
@@ -112,4 +113,5 @@ public func verticalField<Content: View>(_ label: String, isSubLabel: Bool = fal
 		}
 		content()
 	}
+	.frame(maxWidth: .infinity, alignment: .leading)
 }
