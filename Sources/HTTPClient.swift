@@ -111,7 +111,7 @@ public class HTTPClient {
 	 * @param addditionalHttpHeaders  Extra headers to include in the request.
 	 * @param sendAuthorizationHeader If true, attaches the current authorizationToken as Bearer.
 	 */
-	public static func downloadFile(httpMethod: String, url: String, requestParams: [String: Any], fileName: String, onSuccess: @escaping(HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
+	public static func downloadFile(httpMethod: String, url: String, requestParams: [String: Any], fileName: String, onSuccess: @escaping(HTTPURLResponse, URL) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
 		DispatchQueue.global(qos: .userInitiated).async {
 			var urlWithRequestParams = url;
 			if (HTTPMethod.GET == httpMethod) {
@@ -178,7 +178,7 @@ public class HTTPClient {
 				do {
 					try FileManager.default.copyItem(at: tempLocalUrl, to: destinationUrl);
 					DispatchQueue.main.async {
-						onSuccess(httpResponse);
+						onSuccess(httpResponse, destinationUrl);
 					}
 				}
 				catch let error {
