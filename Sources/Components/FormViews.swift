@@ -50,7 +50,7 @@ public func passwordConditions(_ password: String) -> some View {
 
 private func passwordConditionRow(_ label: String, met: Bool) -> some View {
 	HStack(spacing: 6) {
-		Image(systemName: met ? "checkmark" : "xmark")
+		SwiftUI.Image(systemName: met ? "checkmark" : "xmark")
 			.font(.caption)
 			.foregroundColor(met ? .green : .red)
 		Text(label)
