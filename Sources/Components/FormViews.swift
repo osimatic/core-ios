@@ -33,6 +33,32 @@ public func passwordField(_ text: Binding<String>, show: Binding<Bool>, placehol
 	.overlay(RoundedRectangle(cornerRadius: 6).stroke(Color(.systemGray4)))
 }
 
+// MARK: - Password conditions
+
+@ViewBuilder
+public func passwordConditions(_ password: String) -> some View {
+	if !password.isEmpty {
+		VStack(alignment: .leading, spacing: 6) {
+			passwordConditionRow(String.localize("passwordCondLength"), met: password.count >= 8)
+			passwordConditionRow(String.localize("passwordCondUppercase"), met: password.range(of: "[A-Z]", options: .regularExpression) != nil)
+			passwordConditionRow(String.localize("passwordCondLowercase"), met: password.range(of: "[a-z]", options: .regularExpression) != nil)
+			passwordConditionRow(String.localize("passwordCondNumber"), met: password.range(of: "[0-9]", options: .regularExpression) != nil)
+			passwordConditionRow(String.localize("passwordCondSpecial"), met: password.range(of: "[^A-Za-z0-9]", options: .regularExpression) != nil)
+		}
+	}
+}
+
+private func passwordConditionRow(_ label: String, met: Bool) -> some View {
+	HStack(spacing: 6) {
+		Image(systemName: met ? "checkmark" : "xmark")
+			.font(.caption)
+			.foregroundColor(met ? .green : .red)
+		Text(label)
+			.font(.caption)
+			.foregroundColor(met ? .green : .red)
+	}
+}
+
 // MARK: - FormContainer
 
 // Wrapper utilisé avec UIHostingController pour forcer SwiftUI à réinitialiser
