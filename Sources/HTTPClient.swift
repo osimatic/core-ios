@@ -454,4 +454,90 @@ public class HTTPClient {
 		NSLog("Error %@ : decoding data", url);
 	}
 
+	/*
+	 * Sends a multipart/form-data POST request with form fields and binary file parts.
+	 * Handles JWT token expiry and refresh identically to request().
+	 *
+	 * @param url                     The endpoint URL string.
+	 * @param requestParams           Form fields sent alongside the file parts.
+	 * @param filesFieldName          The multipart field name applied to each file part.
+	 * @param filesData               Binary data for each file to upload.
+	 * @param filesMimeType           MIME type applied to each file part (default: image/jpeg).
+	 * @param onSuccess               Called on the main thread with the response data and HTTP response.
+	 * @param onError                 Called on the main thread with the error if the request fails.
+	 * @param addditionalHttpHeaders  Extra headers to include in the request.
+	 * @param sendAuthorizationHeader If true, attaches the current authorizationToken as Bearer.
+	 */
+	public static func multipartRequest(url: String, requestParams: [String: Any], filesFieldName: String, filesData: [Data], filesMimeType: String = "image/jpeg", onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
+		let boundary = "Boundary-\(UUID().uuidString)";
+		var body = Data();
+
+		for (key, value) in requestParams {
+			body.append("--\(boundary)\r\n".data(using: .utf8)!);
+			body.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".data(using: .utf8)!);
+			body.append("\(value)\r\n".data(using: .utf8)!);
+		}
+
+		let fileExtension = filesMimeType == "image/jpeg" ? "jpg" : "bin";
+		for (index, fileData) in filesData.enumerated() {
+			body.append("--\(boundary)\r\n".data(using: .utf8)!);
+			body.append("Content-Disposition: form-data; name=\"\(filesFieldName)\"; filename=\"file_\(index).\(fileExtension)\"\r\n".data(using: .utf8)!);
+			body.append("Content-Type: \(filesMimeType)\r\n\r\n".data(using: .utf8)!);
+			body.append(fileData);
+			body.append("\r\n".data(using: .utf8)!);
+		}
+
+		body.append("--\(boundary)--\r\n".data(using: .utf8)!);
+
+		NSLog("HTTPClient.multipartRequest. URL: %@", url);
+
+		let urlObj = URL(string: url)!;
+		var request = URLRequest(url: urlObj);
+		request.httpMethod = HTTPMethod.POST;
+		request.httpBody = body;
+
+		let accessToken = sendAuthorizationHeader ? HTTPClient.authorizationToken : nil;
+		var headersWithContentType = addditionalHttpHeaders;
+		headersWithContentType["Content-Type"] = "multipart/form-data; boundary=\(boundary)";
+		for (key, value) in getHttpHeaders(httpMethod: HTTPMethod.POST, addditionalHttpHeaders: headersWithContentType, accessToken: accessToken) {
+			request.setValue(value, forHTTPHeaderField: key);
+		}
+
+		DispatchQueue.global(qos: .userInitiated).async {
+			let task = URLSession.shared.dataTask(with: request, completionHandler: {data, httpResponse, error in
+				guard error == nil, let httpResponse = httpResponse as? HTTPURLResponse else {
+					NSLog("HTTPClient.multipartRequest error: %@ ; URL: %@", error?.localizedDescription ?? "unknown error", url);
+					DispatchQueue.main.async {
+						onError(error);
+					}
+					return;
+				}
+
+				NSLog("HTTP status: %d ; URL: %@", httpResponse.statusCode, url);
+
+				if sendAuthorizationHeader, isExpiredToken(httpResponse.statusCode, data) {
+					refreshToken(onComplete: {
+						NSLog("Retry multipartRequest after token refresh");
+						HTTPClient.multipartRequest(url: url, requestParams: requestParams, filesFieldName: filesFieldName, filesData: filesData, filesMimeType: filesMimeType, onSuccess: onSuccess, onError: onError, addditionalHttpHeaders: addditionalHttpHeaders, sendAuthorizationHeader: sendAuthorizationHeader);
+					});
+					return;
+				}
+
+				if isInvalidToken(httpResponse.statusCode, data) {
+					onInvalidToken();
+					DispatchQueue.main.async {
+						onError(nil);
+					}
+					return;
+				}
+
+				DispatchQueue.main.async {
+					onSuccess(data, httpResponse);
+				}
+			});
+
+			task.resume();
+		}
+	}
+
 }
