@@ -18,11 +18,11 @@ public class HTTPClient {
 	 *                                or as body for other methods).
 	 * @param onSuccess               Called on the main thread with the response data and HTTP response.
 	 * @param onError                 Called on the main thread with the error if the request fails.
-	 * @param addditionalHttpHeaders  Extra headers to include in the request.
+	 * @param additionalHttpHeaders  Extra headers to include in the request.
 	 * @param asJson                  If true, encodes the body as JSON instead of form-urlencoded.
 	 * @param sendAuthorizationHeader If true, attaches the current authorizationToken as Bearer.
 	 */
-	public static func request(httpMethod: String, url: String, requestParams: [String: Any], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], asJson: Bool = false, sendAuthorizationHeader: Bool = true) {
+	public static func request(httpMethod: String, url: String, requestParams: [String: Any], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, additionalHttpHeaders: [String: String] = [:], asJson: Bool = false, sendAuthorizationHeader: Bool = true) {
 		var urlWithRequestParams = url;
 		if (HTTPMethod.GET == httpMethod) {
 			urlWithRequestParams += "?"+URLQueryString.getQueryStringFromArray(requestParams);
@@ -34,7 +34,7 @@ public class HTTPClient {
 
 		// HTTP Headers
 		let accessToken = sendAuthorizationHeader ? HTTPClient.authorizationToken : nil;
-		for (key, value) in getHttpHeaders(httpMethod: httpMethod, addditionalHttpHeaders: addditionalHttpHeaders, accessToken: accessToken, asJson: asJson) {
+		for (key, value) in getHttpHeaders(httpMethod: httpMethod, additionalHttpHeaders: additionalHttpHeaders, accessToken: accessToken, asJson: asJson) {
 			request.setValue(value, forHTTPHeaderField: key);
 		}
 
@@ -74,7 +74,7 @@ public class HTTPClient {
 				if sendAuthorizationHeader, isExpiredToken(httpResponse.statusCode, data) {
 					refreshToken(onComplete: {
 						NSLog("Retry HTTP request after token refresh");
-						HTTPClient.request(httpMethod: httpMethod, url: url, requestParams: requestParams, onSuccess: onSuccess, onError: onError, addditionalHttpHeaders: addditionalHttpHeaders, asJson: asJson, sendAuthorizationHeader: sendAuthorizationHeader);
+						HTTPClient.request(httpMethod: httpMethod, url: url, requestParams: requestParams, onSuccess: onSuccess, onError: onError, additionalHttpHeaders: additionalHttpHeaders, asJson: asJson, sendAuthorizationHeader: sendAuthorizationHeader);
 					});
 					return;
 				}
@@ -108,10 +108,10 @@ public class HTTPClient {
 	 * @param fileName                The local file name used when saving to the documents directory.
 	 * @param onSuccess               Called on the main thread with the HTTP response on success.
 	 * @param onError                 Called on the main thread with the error if the download fails.
-	 * @param addditionalHttpHeaders  Extra headers to include in the request.
+	 * @param additionalHttpHeaders  Extra headers to include in the request.
 	 * @param sendAuthorizationHeader If true, attaches the current authorizationToken as Bearer.
 	 */
-	public static func downloadFile(httpMethod: String, url: String, requestParams: [String: Any], fileName: String, onSuccess: @escaping(HTTPURLResponse, URL) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
+	public static func downloadFile(httpMethod: String, url: String, requestParams: [String: Any], fileName: String, onSuccess: @escaping(HTTPURLResponse, URL) -> Void, onError: @escaping(Error?) -> Void, additionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
 		DispatchQueue.global(qos: .userInitiated).async {
 			var urlWithRequestParams = url;
 			if (HTTPMethod.GET == httpMethod) {
@@ -124,7 +124,7 @@ public class HTTPClient {
 
 			// HTTP Headers
 			let accessToken = sendAuthorizationHeader ? HTTPClient.authorizationToken : nil;
-			for (key, value) in getHttpHeaders(httpMethod: httpMethod, addditionalHttpHeaders: addditionalHttpHeaders, accessToken: accessToken) {
+			for (key, value) in getHttpHeaders(httpMethod: httpMethod, additionalHttpHeaders: additionalHttpHeaders, accessToken: accessToken) {
 				request.setValue(value, forHTTPHeaderField: key);
 			}
 
@@ -152,7 +152,7 @@ public class HTTPClient {
 					if isExpiredToken(httpResponse.statusCode, errorData) {
 						refreshToken(onComplete: {
 							NSLog("Retry downloadFile after token refresh");
-							HTTPClient.downloadFile(httpMethod: httpMethod, url: url, requestParams: requestParams, fileName: fileName, onSuccess: onSuccess, onError: onError, addditionalHttpHeaders: addditionalHttpHeaders, sendAuthorizationHeader: sendAuthorizationHeader);
+							HTTPClient.downloadFile(httpMethod: httpMethod, url: url, requestParams: requestParams, fileName: fileName, onSuccess: onSuccess, onError: onError, additionalHttpHeaders: additionalHttpHeaders, sendAuthorizationHeader: sendAuthorizationHeader);
 						});
 						return;
 					}
@@ -195,30 +195,37 @@ public class HTTPClient {
 	 * Builds the HTTP headers dictionary for a request.
 	 *
 	 * @param httpMethod             The HTTP method.
-	 * @param addditionalHttpHeaders Extra headers to merge.
+	 * @param additionalHttpHeaders Extra headers to merge.
 	 * @param accessToken            Optional Bearer token.
 	 * @param asJson                 If true, sets Content-Type to application/json.
 	 * @return A dictionary of HTTP header key-value pairs.
 	 */
-	public static func getHttpHeaders(httpMethod: String, addditionalHttpHeaders: [String: String] = [:], accessToken: String? = nil, asJson: Bool = false) -> [String: String] {
+	// Surcharge sans Content-Type — pour les requêtes dont le Content-Type est géré ailleurs (ex: multipart)
+	public static func getHttpHeaders(additionalHttpHeaders: [String: String] = [:], accessToken: String? = nil) -> [String: String] {
 		var httpHeaders = [
 			"Accept-Language": Locale.current.identifier
 		];
+
+		if let accessToken = accessToken {
+			httpHeaders["Authorization"] = "Bearer "+accessToken;
+		}
+
+		for (key, value) in additionalHttpHeaders {
+			NSLog("header %@ : %@", key, value);
+			httpHeaders[key] = value;
+		}
+
+		return httpHeaders;
+	}
+
+	public static func getHttpHeaders(httpMethod: String, additionalHttpHeaders: [String: String] = [:], accessToken: String? = nil, asJson: Bool = false) -> [String: String] {
+		var httpHeaders = getHttpHeaders(additionalHttpHeaders: additionalHttpHeaders, accessToken: accessToken);
 
 		if (asJson) {
 			httpHeaders["Content-Type"] = "application/json";
 		}
 		else if (HTTPMethod.GET != httpMethod) {
 			httpHeaders["Content-Type"] = "application/x-www-form-urlencoded";
-		}
-
-		if let accessToken = accessToken {
-			httpHeaders["Authorization"] = "Bearer "+accessToken;
-		}
-
-		for (key, value) in addditionalHttpHeaders {
-			NSLog("header %@ : %@", key, value);
-			httpHeaders[key] = value;
 		}
 
 		return httpHeaders;
@@ -369,7 +376,7 @@ public class HTTPClient {
 				HTTPClient.onInvalidRefreshTokenCallback?();
 				onError?(error);
 			},
-			addditionalHttpHeaders: [:],
+			additionalHttpHeaders: [:],
 			asJson: true,
 			sendAuthorizationHeader: false
 		);
@@ -467,10 +474,10 @@ public class HTTPClient {
 	 * @param filesByFieldName        Map of multipart field name to list of binary data to upload. MIME type is auto-detected per file.
 	 * @param onSuccess               Called on the main thread with the response data and HTTP response.
 	 * @param onError                 Called on the main thread with the error if the request fails.
-	 * @param addditionalHttpHeaders  Extra headers to include in the request.
+	 * @param additionalHttpHeaders  Extra headers to include in the request.
 	 * @param sendAuthorizationHeader If true, attaches the current authorizationToken as Bearer.
 	 */
-	public static func multipartRequest(url: String, requestParams: [String: Any], filesByFieldName: [String: [Data]], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
+	public static func multipartRequest(url: String, requestParams: [String: Any], filesByFieldName: [String: [Data]], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, additionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
 		let boundary = generateBoundary();
 		let lineEnd = "\r\n";
 		let twoHyphens = "--";
@@ -511,9 +518,9 @@ public class HTTPClient {
 		request.httpBody = body;
 
 		let accessToken = sendAuthorizationHeader ? HTTPClient.authorizationToken : nil;
-		var headersWithContentType = addditionalHttpHeaders;
+		var headersWithContentType = additionalHttpHeaders;
 		headersWithContentType["Content-Type"] = "multipart/form-data; boundary=\(boundary)";
-		for (key, value) in getHttpHeaders(httpMethod: HTTPMethod.POST, addditionalHttpHeaders: headersWithContentType, accessToken: accessToken) {
+		for (key, value) in getHttpHeaders(additionalHttpHeaders: headersWithContentType, accessToken: accessToken) {
 			request.setValue(value, forHTTPHeaderField: key);
 		}
 
@@ -532,7 +539,7 @@ public class HTTPClient {
 				if sendAuthorizationHeader, isExpiredToken(httpResponse.statusCode, data) {
 					refreshToken(onComplete: {
 						NSLog("Retry multipartRequest after token refresh");
-						HTTPClient.multipartRequest(url: url, requestParams: requestParams, filesByFieldName: filesByFieldName, onSuccess: onSuccess, onError: onError, addditionalHttpHeaders: addditionalHttpHeaders, sendAuthorizationHeader: sendAuthorizationHeader);
+						HTTPClient.multipartRequest(url: url, requestParams: requestParams, filesByFieldName: filesByFieldName, onSuccess: onSuccess, onError: onError, additionalHttpHeaders: additionalHttpHeaders, sendAuthorizationHeader: sendAuthorizationHeader);
 					});
 					return;
 				}
