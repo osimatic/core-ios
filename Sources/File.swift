@@ -112,4 +112,69 @@ public class File {
 		});
 		task.resume();
 	}
+
+	public static func detectMimeType(_ data: Data) -> String {
+		guard data.count >= 4 else {
+			return "application/octet-stream";
+		}
+
+		let bytes = [UInt8](data.prefix(4));
+
+		if bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF {
+			return "image/jpeg";
+		}
+
+		if bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 {
+			return "image/png";
+		}
+
+		if bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46 {
+			return "image/gif";
+		}
+
+		if bytes[0] == 0x42 && bytes[1] == 0x4D {
+			return "image/bmp";
+		}
+
+		if bytes[0] == 0x49 && bytes[1] == 0x49 && bytes[2] == 0x2A && bytes[3] == 0x00 {
+			return "image/tiff";
+		}
+
+		if bytes[0] == 0x4D && bytes[1] == 0x4D && bytes[2] == 0x00 && bytes[3] == 0x2A {
+			return "image/tiff";
+		}
+
+		return "application/octet-stream";
+	}
+
+	public static func getFileExtension(mimeType: String) -> String {
+		switch mimeType {
+		case "image/jpeg":
+			return "jpg";
+		case "image/png":
+			return "png";
+		case "image/gif":
+			return "gif";
+		case "image/bmp":
+			return "bmp";
+		case "image/tiff":
+			return "tiff";
+		case "image/webp":
+			return "webp";
+		case "video/mp4":
+			return "mp4";
+		case "video/quicktime":
+			return "mov";
+		case "audio/mpeg":
+			return "mp3";
+		case "audio/wav":
+			return "wav";
+		case "application/pdf":
+			return "pdf";
+		case "application/zip":
+			return "zip";
+		default:
+			return "bin";
+		}
+	}
 }

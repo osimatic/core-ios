@@ -454,6 +454,10 @@ public class HTTPClient {
 		NSLog("Error %@ : decoding data", url);
 	}
 
+	private static func generateBoundary() -> String {
+		return "boundary_\(UUID().uuidString)";
+	}
+
 	/*
 	 * Sends a multipart/form-data POST request with form fields and binary file parts.
 	 * Handles JWT token expiry and refresh identically to request().
@@ -462,32 +466,42 @@ public class HTTPClient {
 	 * @param requestParams           Form fields sent alongside the file parts.
 	 * @param filesFieldName          The multipart field name applied to each file part.
 	 * @param filesData               Binary data for each file to upload.
-	 * @param filesMimeType           MIME type applied to each file part (default: image/jpeg).
+	 * @param filesMimeType           MIME type applied to each file part (optional, auto-detected if nil).
 	 * @param onSuccess               Called on the main thread with the response data and HTTP response.
 	 * @param onError                 Called on the main thread with the error if the request fails.
 	 * @param addditionalHttpHeaders  Extra headers to include in the request.
 	 * @param sendAuthorizationHeader If true, attaches the current authorizationToken as Bearer.
 	 */
-	public static func multipartRequest(url: String, requestParams: [String: Any], filesFieldName: String, filesData: [Data], filesMimeType: String = "image/jpeg", onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
-		let boundary = "Boundary-\(UUID().uuidString)";
+	public static func multipartRequest(url: String, requestParams: [String: Any], filesFieldName: String, filesData: [Data], filesMimeType: String? = nil, onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
+		let boundary = generateBoundary();
+		let lineEnd = "\r\n";
+		let twoHyphens = "--";
 		var body = Data();
 
 		for (key, value) in requestParams {
-			body.append("--\(boundary)\r\n".data(using: .utf8)!);
-			body.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".data(using: .utf8)!);
-			body.append("\(value)\r\n".data(using: .utf8)!);
+			let valueStr = String(describing: value);
+			body.append((twoHyphens + boundary + lineEnd).data(using: .utf8)!);
+			body.append(("Content-Disposition: form-data; name=\"\(key)\"" + lineEnd).data(using: .utf8)!);
+			body.append(("Content-Type: text/plain; charset=UTF-8" + lineEnd).data(using: .utf8)!);
+			body.append(lineEnd.data(using: .utf8)!);
+			body.append(valueStr.data(using: .utf8)!);
+			body.append(lineEnd.data(using: .utf8)!);
 		}
 
-		let fileExtension = filesMimeType == "image/jpeg" ? "jpg" : "bin";
 		for (index, fileData) in filesData.enumerated() {
-			body.append("--\(boundary)\r\n".data(using: .utf8)!);
-			body.append("Content-Disposition: form-data; name=\"\(filesFieldName)\"; filename=\"file_\(index).\(fileExtension)\"\r\n".data(using: .utf8)!);
-			body.append("Content-Type: \(filesMimeType)\r\n\r\n".data(using: .utf8)!);
+			let mimeType = filesMimeType ?? File.detectMimeType(fileData);
+			let fileExtension = File.getFileExtension(mimeType: mimeType);
+			let filename = filesFieldName + "_" + String(index) + "." + fileExtension;
+			body.append((twoHyphens + boundary + lineEnd).data(using: .utf8)!);
+			body.append(("Content-Disposition: form-data; name=\"\(filesFieldName)[]\"; filename=\"\(filename)\"" + lineEnd).data(using: .utf8)!);
+			body.append(("Content-Type: \(mimeType)" + lineEnd).data(using: .utf8)!);
+			body.append(("Content-Transfer-Encoding: binary" + lineEnd).data(using: .utf8)!);
+			body.append(lineEnd.data(using: .utf8)!);
 			body.append(fileData);
-			body.append("\r\n".data(using: .utf8)!);
+			body.append(lineEnd.data(using: .utf8)!);
 		}
 
-		body.append("--\(boundary)--\r\n".data(using: .utf8)!);
+		body.append((twoHyphens + boundary + twoHyphens + lineEnd).data(using: .utf8)!);
 
 		NSLog("HTTPClient.multipartRequest. URL: %@", url);
 
