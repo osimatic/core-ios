@@ -464,15 +464,13 @@ public class HTTPClient {
 	 *
 	 * @param url                     The endpoint URL string.
 	 * @param requestParams           Form fields sent alongside the file parts.
-	 * @param filesFieldName          The multipart field name applied to each file part.
-	 * @param filesData               Binary data for each file to upload.
-	 * @param filesMimeType           MIME type applied to each file part (optional, auto-detected if nil).
+	 * @param filesByFieldName        Map of multipart field name to list of binary data to upload. MIME type is auto-detected per file.
 	 * @param onSuccess               Called on the main thread with the response data and HTTP response.
 	 * @param onError                 Called on the main thread with the error if the request fails.
 	 * @param addditionalHttpHeaders  Extra headers to include in the request.
 	 * @param sendAuthorizationHeader If true, attaches the current authorizationToken as Bearer.
 	 */
-	public static func multipartRequest(url: String, requestParams: [String: Any], filesFieldName: String, filesData: [Data], filesMimeType: String? = nil, onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
+	public static func multipartRequest(url: String, requestParams: [String: Any], filesByFieldName: [String: [Data]], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, addditionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
 		let boundary = generateBoundary();
 		let lineEnd = "\r\n";
 		let twoHyphens = "--";
@@ -488,17 +486,19 @@ public class HTTPClient {
 			body.append(lineEnd.data(using: .utf8)!);
 		}
 
-		for (index, fileData) in filesData.enumerated() {
-			let mimeType = filesMimeType ?? File.detectMimeType(fileData);
-			let fileExtension = File.getFileExtension(mimeType: mimeType);
-			let filename = filesFieldName + "_" + String(index) + "." + fileExtension;
-			body.append((twoHyphens + boundary + lineEnd).data(using: .utf8)!);
-			body.append(("Content-Disposition: form-data; name=\"\(filesFieldName)[]\"; filename=\"\(filename)\"" + lineEnd).data(using: .utf8)!);
-			body.append(("Content-Type: \(mimeType)" + lineEnd).data(using: .utf8)!);
-			body.append(("Content-Transfer-Encoding: binary" + lineEnd).data(using: .utf8)!);
-			body.append(lineEnd.data(using: .utf8)!);
-			body.append(fileData);
-			body.append(lineEnd.data(using: .utf8)!);
+		for (fieldName, filesData) in filesByFieldName {
+			for (index, fileData) in filesData.enumerated() {
+				let mimeType = File.detectMimeType(fileData);
+				let fileExtension = File.getFileExtension(mimeType: mimeType);
+				let filename = fieldName + "_" + String(index) + "." + fileExtension;
+				body.append((twoHyphens + boundary + lineEnd).data(using: .utf8)!);
+				body.append(("Content-Disposition: form-data; name=\"\(fieldName)[]\"; filename=\"\(filename)\"" + lineEnd).data(using: .utf8)!);
+				body.append(("Content-Type: \(mimeType)" + lineEnd).data(using: .utf8)!);
+				body.append(("Content-Transfer-Encoding: binary" + lineEnd).data(using: .utf8)!);
+				body.append(lineEnd.data(using: .utf8)!);
+				body.append(fileData);
+				body.append(lineEnd.data(using: .utf8)!);
+			}
 		}
 
 		body.append((twoHyphens + boundary + twoHyphens + lineEnd).data(using: .utf8)!);
@@ -532,7 +532,7 @@ public class HTTPClient {
 				if sendAuthorizationHeader, isExpiredToken(httpResponse.statusCode, data) {
 					refreshToken(onComplete: {
 						NSLog("Retry multipartRequest after token refresh");
-						HTTPClient.multipartRequest(url: url, requestParams: requestParams, filesFieldName: filesFieldName, filesData: filesData, filesMimeType: filesMimeType, onSuccess: onSuccess, onError: onError, addditionalHttpHeaders: addditionalHttpHeaders, sendAuthorizationHeader: sendAuthorizationHeader);
+						HTTPClient.multipartRequest(url: url, requestParams: requestParams, filesByFieldName: filesByFieldName, onSuccess: onSuccess, onError: onError, addditionalHttpHeaders: addditionalHttpHeaders, sendAuthorizationHeader: sendAuthorizationHeader);
 					});
 					return;
 				}
