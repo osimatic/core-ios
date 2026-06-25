@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "OsimaticCoreIos",
+    defaultLocalization: "fr",
     platforms: [.iOS(.v16)],
     products: [
         .library(name: "OsimaticCoreIos", targets: ["OsimaticCoreIos"]),

@@ -7,13 +7,18 @@ import UIKit
 public extension String {
 
 	/*
-	 * Returns the localized string for the given key using the main bundle.
+	 * Returns the localized string for the given key.
+	 * Checks Bundle.main first (host app can override), then falls back to Bundle.module (core-ios defaults).
 	 *
 	 * @param key The localization key.
-	 * @return The localized string, or the key itself if no translation is found.
+	 * @return The localized string, or the key itself if no translation is found in either bundle.
 	 */
 	static func localize(_ key : String) -> String {
-		return NSLocalizedString(key, tableName: nil, bundle: Bundle.main, value: "", comment: "")
+		let mainValue = NSLocalizedString(key, tableName: nil, bundle: Bundle.main, value: "", comment: "")
+		if (!mainValue.isEmpty && mainValue != key) {
+			return mainValue
+		}
+		return NSLocalizedString(key, tableName: nil, bundle: Bundle.module, value: key, comment: "")
 	}
 
 	/*

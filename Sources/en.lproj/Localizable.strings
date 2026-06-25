@@ -1,0 +1,26 @@
+/* General */
+"ok" = "OK";
+"cancel" = "Cancel";
+
+/* Dates and periods */
+"dateTimeDisplay" = "On %@ at %@";
+"periodDisplay" = "From %@ to %@";
+"periodFrom" = "From";
+"periodTo" = "to";
+"timeRangeFrom" = "From";
+"timeRangeTo" = "to";
+"selectDateRangeTitle" = "Select date range";
+
+/* File sizes */
+"file_size_bytes" = "B";
+"file_size_kilobytes" = "kB";
+"file_size_megabytes" = "MB";
+"file_size_gigabytes" = "GB";
+"file_size_terrabytes" = "TB";
+
+/* Password */
+"passwordCondLength" = "At least 8 characters";
+"passwordCondUppercase" = "One uppercase letter";
+"passwordCondLowercase" = "One lowercase letter";
+"passwordCondNumber" = "One digit";
+"passwordCondSpecial" = "One special character";

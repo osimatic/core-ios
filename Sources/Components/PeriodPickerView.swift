@@ -5,6 +5,7 @@ import SwiftUI
  * when startDate changes and becomes later than endDate, endDate is updated
  * to match — SwiftUI's DatePicker does not update the binding itself when
  * the `in: startDate...` constraint makes the current value invalid.
+ * Default layout: HStack(spacing: 12). Graphical style: vertical with Divider.
  */
 public struct PeriodPickerView: View {
 	@Binding var startDate: Date
@@ -27,27 +28,36 @@ public struct PeriodPickerView: View {
 		self.onChanged = onChanged
 	}
 
-	public var body: some View {
-		Group {
-			verticalField(String.localize("periodFrom"), isSubLabel: isSubLabel) {
-				DatePicker("", selection: $startDate, displayedComponents: .date)
-					.labelsHidden()
-					.onChange(of: startDate) { newValue in
-						if (newValue > endDate) {
-                            endDate = newValue
-                        }
-						onChanged?()
-					}
-					.graphicalStyleIfNeeded(graphicalStyle)
+	@ViewBuilder
+	private var fromPicker: some View {
+		DatePicker("", selection: $startDate, displayedComponents: .date)
+			.labelsHidden()
+			.onChange(of: startDate) { newValue in
+				if (newValue > endDate) { endDate = newValue }
+				onChanged?()
 			}
-			if (graphicalStyle) {
-                Divider()
-            }
-			verticalField(String.localize("periodTo"), isSubLabel: isSubLabel) {
-				DatePicker("", selection: $endDate, in: startDate..., displayedComponents: .date)
-					.labelsHidden()
-					.onChange(of: endDate) { _ in onChanged?() }
-					.graphicalStyleIfNeeded(graphicalStyle)
+			.graphicalStyleIfNeeded(graphicalStyle)
+	}
+
+	@ViewBuilder
+	private var toPicker: some View {
+		DatePicker("", selection: $endDate, in: startDate..., displayedComponents: .date)
+			.labelsHidden()
+			.onChange(of: endDate) { _ in onChanged?() }
+			.graphicalStyleIfNeeded(graphicalStyle)
+	}
+
+	public var body: some View {
+		if (graphicalStyle) {
+			Group {
+				verticalField(String.localize("periodFrom"), isSubLabel: isSubLabel) { fromPicker }
+				Divider()
+				verticalField(String.localize("periodTo"), isSubLabel: isSubLabel) { toPicker }
+			}
+		} else {
+			HStack(spacing: 12) {
+				verticalField(String.localize("periodFrom"), isSubLabel: isSubLabel) { fromPicker }
+				verticalField(String.localize("periodTo"), isSubLabel: isSubLabel) { toPicker }
 			}
 		}
 	}

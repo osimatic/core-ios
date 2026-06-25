@@ -1,0 +1,26 @@
+/* Général */
+"ok" = "OK";
+"cancel" = "Annuler";
+
+/* Dates et périodes */
+"dateTimeDisplay" = "Le %@ à %@";
+"periodDisplay" = "Du %@ au %@";
+"periodFrom" = "Du";
+"periodTo" = "au";
+"timeRangeFrom" = "De";
+"timeRangeTo" = "à";
+"selectDateRangeTitle" = "Choix de la période";
+
+/* Tailles de fichiers */
+"file_size_bytes" = "o";
+"file_size_kilobytes" = "Ko";
+"file_size_megabytes" = "Mo";
+"file_size_gigabytes" = "Go";
+"file_size_terrabytes" = "To";
+
+/* Mot de passe */
+"passwordCondLength" = "Au moins 8 caractères";
+"passwordCondUppercase" = "Une majuscule";
+"passwordCondLowercase" = "Une minuscule";
+"passwordCondNumber" = "Un chiffre";
+"passwordCondSpecial" = "Un caractère spécial";
