@@ -101,10 +101,43 @@ public class Image {
 	/*
 	 * Returns a Base64-encoded JPEG string for the given image, or an empty string on failure.
 	 *
-	 * @param img The image to encode.
+	 * @param img                The image to encode.
+	 * @param compressionQuality JPEG compression quality (default: 1.0).
 	 */
-	public static func convertImageToBase64String(_ img: UIImage) -> String {
-		return img.jpegData(compressionQuality: 1)?.base64EncodedString() ?? "";
+	public static func convertImageToBase64String(_ img: UIImage, compressionQuality: CGFloat = 0.85) -> String {
+		return img.jpegData(compressionQuality: compressionQuality)?.base64EncodedString() ?? "";
+	}
+
+	/*
+	 * Decodes a Base64 string to a UIImage.
+	 *
+	 * @param string The Base64-encoded image string.
+	 * @return The decoded UIImage, or nil if the string is invalid.
+	 */
+	public static func convertBase64StringToImage(_ string: String) -> UIImage? {
+		guard let data = Data(base64Encoded: string) else { return nil };
+		return UIImage(data: data);
+	}
+
+	/*
+	 * Encodes an array of UIImages to Base64 JPEG strings.
+	 *
+	 * @param images             The images to encode.
+	 * @param compressionQuality JPEG compression quality (default: 0.85).
+	 * @return Array of Base64 strings, one per successfully encoded image.
+	 */
+	public static func convertImagesToBase64(_ images: [UIImage], compressionQuality: CGFloat = 0.85) -> [String] {
+		return images.compactMap { convertImageToBase64String($0, compressionQuality: compressionQuality) };
+	}
+
+	/*
+	 * Decodes an array of Base64 strings back to UIImages.
+	 *
+	 * @param strings The Base64-encoded image strings.
+	 * @return Array of UIImages, skipping any strings that fail to decode.
+	 */
+	public static func convertBase64StringsToImages(_ strings: [String]) -> [UIImage] {
+		return strings.compactMap { convertBase64StringToImage($0) };
 	}
 	
 	/*
