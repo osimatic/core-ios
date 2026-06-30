@@ -27,6 +27,7 @@ public struct CheckboxView: View {
 					.frame(maxWidth: .infinity)
 			} else {
 				HStack(alignment: .top, spacing: 8) { icon; text }
+				.frame(maxWidth: .infinity, alignment: .leading)
 			}
 		}
 		.buttonStyle(.plain)

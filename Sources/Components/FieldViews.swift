@@ -61,6 +61,7 @@ public func horizontalField(_ label: String, _ value: String, isSubLabel: Bool =
 		valueText(value, color: color)
 			.frame(maxWidth: .infinity, alignment: .leading)
 	}
+	.frame(maxWidth: .infinity, alignment: .leading)
 }
 
 @ViewBuilder
@@ -71,6 +72,7 @@ public func horizontalField<Content: View>(_ label: String, isSubLabel: Bool = f
 		content()
 			.frame(maxWidth: .infinity, alignment: .leading)
 	}
+	.frame(maxWidth: .infinity, alignment: .leading)
 }
 
 @ViewBuilder
@@ -88,6 +90,7 @@ public func horizontalField(_ label: String, _ ns: NSAttributedString, isSubLabe
 		NSAttributedLabel(ns)
         .frame(maxWidth: .infinity, alignment: .leading)
 	}
+	.frame(maxWidth: .infinity, alignment: .leading)
 }
 
 // MARK: - Vertical fields

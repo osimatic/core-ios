@@ -46,6 +46,7 @@ public struct ValueCard {
 			Text(item.value)
 				.font(.system(size: 13, weight: .semibold))
 				.multilineTextAlignment(.trailing)
+				.frame(maxWidth: .infinity, alignment: .trailing)
 		}
 	}
 

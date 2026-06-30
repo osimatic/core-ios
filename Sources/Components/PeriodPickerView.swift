@@ -59,6 +59,7 @@ public struct PeriodPickerView: View {
 				verticalField(String.localize("periodFrom"), isSubLabel: isSubLabel) { fromPicker }
 				verticalField(String.localize("periodTo"), isSubLabel: isSubLabel) { toPicker }
 			}
+			.frame(maxWidth: .infinity, alignment: .leading)
 		}
 	}
 }

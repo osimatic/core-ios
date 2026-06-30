@@ -31,5 +31,6 @@ public struct TimeRangePickerView: View {
 					.onChange(of: endTime) { _ in onChanged?() }
 			}
 		}
+		.frame(maxWidth: .infinity, alignment: .leading)
 	}
 }

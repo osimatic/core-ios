@@ -27,6 +27,7 @@ public func passwordField(_ text: Binding<String>, show: Binding<Bool>, placehol
 				.foregroundColor(.secondary)
 		}
 	}
+	.frame(maxWidth: .infinity)
 	.padding(.horizontal, 8)
 	.padding(.vertical, 6)
 	.background(Color(.systemBackground))

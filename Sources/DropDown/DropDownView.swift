@@ -45,6 +45,8 @@ public struct DropDownView: UIViewRepresentable {
 
 	public func makeUIView(context: Context) -> DropDown {
 		let dropDown = DropDown(frame: .zero)
+		dropDown.setContentHuggingPriority(.defaultLow, for: .horizontal)
+		dropDown.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 		dropDown.didSelect { text, index, id in
 			context.coordinator.handleSelection(index: index, text: text, id: id)
 		}
