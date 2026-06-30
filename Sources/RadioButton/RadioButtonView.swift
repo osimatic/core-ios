@@ -27,6 +27,7 @@ public struct RadioButtonView<Tag: Hashable>: View {
 					.foregroundColor(selection == tag ? Color.accentColor : Color.secondary)
 				Text(label).font(.system(size: 14)).foregroundColor(Color.primary)
 			}
+			.frame(maxWidth: .infinity, alignment: .leading)
 		}
 		.buttonStyle(.plain)
 	}
@@ -54,7 +55,9 @@ public struct RadioButtonView<Tag: Hashable>: View {
 			ForEach(Array(opts.enumerated()), id: \.offset) { (_, o) in
 				RadioButtonView(o.label, tag: o.tag, selection: selection)
 			}
-		}.frame(height: 30)
+		}
+		.frame(maxWidth: .infinity, alignment: .leading)
+		.frame(height: 30)
 	}
 
 	public static func horizontal(_ opts: [(tag: Tag, label: String)], selection: Binding<Tag>) -> some View {

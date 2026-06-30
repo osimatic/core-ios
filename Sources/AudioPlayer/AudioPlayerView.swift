@@ -38,6 +38,7 @@ public struct AudioPlayerView: View {
 					}
 				}
 			}
+			.frame(maxWidth: .infinity)
 		}
 	}
 }

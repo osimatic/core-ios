@@ -354,6 +354,9 @@ open class DropDown: UITextField {
 		self.selectedIndex = selectedIndex;
 		if (selectedIndex >= 0 && selectedIndex < self.optionArray.count) {
 			self.text = self.optionArray[selectedIndex].getLabel();
+			DispatchQueue.main.async {
+				self.selectedTextRange = self.textRange(from: self.beginningOfDocument, to: self.beginningOfDocument)
+			}
 		}
 	}
 
@@ -480,7 +483,7 @@ extension DropDown: UITableViewDelegate {
 					   },
 					   completion: { (_) -> Void in
 						   self.text = "\(selectedText)"
-
+						   self.selectedTextRange = self.textRange(from: self.beginningOfDocument, to: self.beginningOfDocument)
 						   tableView.reloadData()
 					   })
 		if hideOptionsWhenSelect {
