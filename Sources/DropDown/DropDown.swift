@@ -299,7 +299,9 @@ open class DropDown: UITextField {
 						   self.table.removeFromSuperview()
 						   self.backgroundView.removeFromSuperview()
 						   self.isSelected = false
-						   self.resignFirstResponder()
+						   if self.isFirstResponder {
+							   self.resignFirstResponder()
+						   }
 						   self.TableDidDisappearCompletion()
 					   })
 	}
