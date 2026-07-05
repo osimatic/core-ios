@@ -38,18 +38,16 @@ public struct QRCodeScanView: View {
 				ProgressView().scaleEffect(1.5).tint(.white)
 			}
 		}
-		.toolbar {
+		.toolbar(content: {
 			ToolbarItem(placement: .navigationBarTrailing) {
 				Button(action: onSwitchCamera) {
 					Image(systemName: "arrow.triangle.2.circlepath.camera")
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
-				Button(action: onStartStop) {
-					Text(viewModel.isScanning ? stopScanningLabel : startScanningLabel)
-				}
+				Button(viewModel.isScanning ? stopScanningLabel : startScanningLabel, action: onStartStop)
 			}
-		}
+		})
 	}
 }
 
