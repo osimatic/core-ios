@@ -6,9 +6,15 @@ public class NFC {
 	// MARK: - Configurable messages
 
 	public static var errorTitle: String = "Error"
-	public static var errorMessageUnsupportedFeature: String = "NFC unsupported"
-	public static var errorMessageSessionTimeout: String = "NFC session timeout"
-	public static var errorMessageUnknown: String = "NFC error"
+	public static var tagReadErrorMessageUnsupportedFeature: String = "NFC unsupported"
+	public static var tagReadErrorMessageSessionTimeout: String = "NFC session timeout"
+	public static var tagReadErrorMessageUnknown: String = "NFC error"
+
+	public static var tagWriteSuccessMessage: String = "Success"
+	public static var tagWriteErrorConnectionFailed: String = "Connection failed"
+	public static var tagWriteErrorTagNotSupported: String = "Tag not supported"
+	public static var tagWriteErrorTagOnlyReadable: String = "Tag is read only"
+	public static var tagWriteErrorUnknown: String = "Unknown error"
 
 	// MARK: - Session
 
@@ -23,11 +29,43 @@ public class NFC {
 	public static func errorMessage(from error: NFCReaderError) -> String {
 		switch error.code {
 			case .readerErrorUnsupportedFeature:
-				return errorMessageUnsupportedFeature
+				return tagReadErrorMessageUnsupportedFeature
 			case .readerSessionInvalidationErrorSessionTimeout:
-				return errorMessageSessionTimeout
+				return tagReadErrorMessageSessionTimeout
 			default:
-				return errorMessageUnknown
+				return tagReadErrorMessageUnknown
+		}
+	}
+
+	// MARK: - Tag writing
+
+	public static func writeTag(_ tag: NFCNDEFTag, message: NFCNDEFMessage, session: NFCNDEFReaderSession, onSuccess: @escaping () -> Void) {
+		tag.queryNDEFStatus { status, _, error in
+			guard error == nil else {
+				session.invalidate(errorMessage: NFC.tagWriteErrorConnectionFailed)
+				return
+			}
+			if status == .notSupported {
+				session.invalidate(errorMessage: NFC.tagWriteErrorTagNotSupported)
+				return
+			}
+			if status == .readOnly {
+				session.invalidate(errorMessage: NFC.tagWriteErrorTagOnlyReadable)
+				return
+			}
+			if status != .readWrite {
+				session.invalidate(errorMessage: NFC.tagWriteErrorUnknown)
+				return
+			}
+			tag.writeNDEF(message) { error in
+				if error != nil {
+					session.invalidate(errorMessage: NFC.tagWriteErrorUnknown)
+				} else {
+					onSuccess()
+					session.alertMessage = NFC.tagWriteSuccessMessage
+					session.invalidate()
+				}
+			}
 		}
 	}
 
