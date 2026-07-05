@@ -38,10 +38,6 @@ open class NFCScanViewController: UIHostingController<NFCScanView>, NFCNDEFReade
 
 	public var onScan: ((String, Bool) -> Void)?
 	public var scanBackgroundColor: Color = Color(UIColor.systemBackground)
-	public var errorTitle: String = "Error"
-	public var errorMessageUnsupportedFeature: String = "NFC unsupported"
-	public var errorMessageSessionTimeout: String = "NFC session timeout"
-	public var errorMessageUnknown: String = "NFC error"
 
 	private var nfcSuccess = false
 	private var session: NFCNDEFReaderSession!
@@ -87,11 +83,11 @@ open class NFCScanViewController: UIHostingController<NFCScanView>, NFCNDEFReade
 			return
 		}
 
-		Alert.display(title: errorTitle, message: errorMessage(from: readerError), viewController: self, goBack: true)
+		Alert.display(title: NFC.errorTitle, message: NFC.errorMessage(from: readerError), viewController: self, goBack: true)
 	}
 
 	public func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
-		guard let payload = getPayload(messages) else { return }
+		guard let payload = NFC.getPayload(messages) else { return }
 
 		nfcSuccess = true
 		self.session.invalidate()
@@ -102,59 +98,11 @@ open class NFCScanViewController: UIHostingController<NFCScanView>, NFCNDEFReade
 		}
 	}
 
-	// MARK: - Error message
-
-	open func errorMessage(from error: NFCReaderError) -> String {
-		switch error.code {
-			case .readerErrorUnsupportedFeature:
-				return errorMessageUnsupportedFeature
-			case .readerSessionInvalidationErrorSessionTimeout:
-				return errorMessageSessionTimeout
-			default:
-				return errorMessageUnknown
-		}
-	}
-
 	// MARK: - NFC session
 
 	private func beginSession() {
 		nfcSuccess = false
-		session = NFCNDEFReaderSession(delegate: self, queue: DispatchQueue.main, invalidateAfterFirstRead: false)
-		session.begin()
-	}
-
-	// MARK: - Payload parsing
-
-	private struct NFCPayload {
-		let url: String
-		let byApp: Bool
-	}
-
-	private func getPayload(_ messages: [NFCNDEFMessage]) -> NFCPayload? {
-		for message in messages {
-			for payload in message.records {
-				NSLog("Identifier: %@ (%@) ; Type: %@ (%@) ; Format: %d ; Payload: %@ (%@)",
-					payload.identifier.description, String(data: payload.identifier, encoding: .ascii) ?? "",
-					payload.type.description, String(data: payload.type, encoding: .ascii) ?? "",
-					payload.typeNameFormat.rawValue,
-					payload.payload.description, String(data: payload.payload, encoding: .ascii) ?? ""
-				)
-
-				if payload.typeNameFormat == .nfcWellKnown {
-					if let uriPayload = payload.wellKnownTypeURIPayload(), uriPayload.absoluteString != "" {
-						NSLog("URI. payload : %@", uriPayload.absoluteString)
-						return NFCPayload(url: uriPayload.absoluteString, byApp: false)
-					}
-				} else {
-					if let metadata = String(data: payload.payload, encoding: .utf8) {
-						NSLog("byApp. payload : %@", metadata)
-						return NFCPayload(url: metadata, byApp: true)
-					}
-				}
-			}
-		}
-		NSLog("returned nil")
-		return nil
+		session = NFC.beginSession(delegate: self)
 	}
 
 	// MARK: - Beep
