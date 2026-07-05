@@ -55,6 +55,7 @@ public struct DropDownView: UIViewRepresentable {
 		dropDown.listWillDisappear { context.coordinator.parent.onListWillDisappear?() }
 		dropDown.listDidDisappear {
 			context.coordinator.lastAppliedLabel = nil
+			context.coordinator.syncSelection(uiView: dropDown, selection: context.coordinator.parent.selection)
 			context.coordinator.parent.onListDidDisappear?()
 		}
 		return dropDown
