@@ -53,7 +53,10 @@ public struct DropDownView: UIViewRepresentable {
 		dropDown.listWillAppear { context.coordinator.parent.onListWillAppear?() }
 		dropDown.listDidAppear { context.coordinator.parent.onListDidAppear?() }
 		dropDown.listWillDisappear { context.coordinator.parent.onListWillDisappear?() }
-		dropDown.listDidDisappear { context.coordinator.parent.onListDidDisappear?() }
+		dropDown.listDidDisappear {
+			context.coordinator.lastAppliedLabel = nil
+			context.coordinator.parent.onListDidDisappear?()
+		}
 		return dropDown
 	}
 
