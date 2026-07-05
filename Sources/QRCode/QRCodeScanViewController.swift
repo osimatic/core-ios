@@ -45,7 +45,9 @@ public struct QRCodeScanView: View {
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
-				Button(viewModel.isScanning ? stopScanningLabel : startScanningLabel, action: onStartStop)
+				Button(action: onStartStop) {
+					Text(viewModel.isScanning ? stopScanningLabel : startScanningLabel)
+				}
 			}
 		}
 	}
