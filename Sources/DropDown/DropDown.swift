@@ -222,12 +222,10 @@ open class DropDown: UITextField {
 	}
 
 	public func showList() {
-		if parentController == nil {
-			parentController = parentViewController
-		}
-		backgroundView.frame = parentController?.view.frame ?? backgroundView.frame
-		pointToParent = getConvertedPoint(self, baseView: parentController?.view)
-		parentController?.view.insertSubview(backgroundView, aboveSubview: self)
+		guard let targetView = self.window else { return }
+		backgroundView.frame = targetView.bounds
+		pointToParent = getConvertedPoint(self, baseView: targetView)
+		targetView.addSubview(backgroundView)
 		TableWillAppearCompletion()
 		if listHeight > rowHeight * CGFloat(dataArray.count) {
 			tableheightX = rowHeight * CGFloat(dataArray.count)
@@ -248,10 +246,10 @@ open class DropDown: UITextField {
 		table.layer.cornerRadius = 3
 		table.backgroundColor = rowBackgroundColor
 		table.rowHeight = rowHeight
-		parentController?.view.addSubview(shadow)
-		parentController?.view.addSubview(table)
+		targetView.addSubview(shadow)
+		targetView.addSubview(table)
 		isSelected = true
-		let height = (parentController?.view.frame.height ?? 0) - (pointToParent.y + frame.height + 5)
+		let height = targetView.frame.height - (pointToParent.y + frame.height + 5)
 		var y = pointToParent.y + frame.height + 5
 		if height < (keyboardHeight + tableheightX) {
 			y = pointToParent.y - tableheightX
@@ -301,6 +299,7 @@ open class DropDown: UITextField {
 						   self.table.removeFromSuperview()
 						   self.backgroundView.removeFromSuperview()
 						   self.isSelected = false
+						   self.resignFirstResponder()
 						   self.TableDidDisappearCompletion()
 					   })
 	}
@@ -316,7 +315,7 @@ open class DropDown: UITextField {
 		} else {
 			tableheightX = listHeight
 		}
-		let height = (parentController?.view.frame.height ?? 0) - (pointToParent.y + frame.height + 5)
+		let height = (self.window?.frame.height ?? 0) - (pointToParent.y + frame.height + 5)
 		var y = pointToParent.y + frame.height + 5
 		if height < (keyboardHeight + tableheightX) {
 			y = pointToParent.y - tableheightX
@@ -407,7 +406,9 @@ extension DropDown: UITextFieldDelegate {
 		textField.text = ""
 		// self.selectedIndex = nil
 		dataArray = optionArray.map({ $0.getLabel() });
-		touchAction()
+		if !isSelected {
+			touchAction()
+		}
 	}
 
 	public func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
