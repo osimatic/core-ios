@@ -6,10 +6,12 @@ import SwiftUI
 public struct RemotePhotoView: View {
 	private let url: URL
 	private let maxHeight: CGFloat
+	private let contentMode: ContentMode
 
-	public init(_ url: URL, maxHeight: CGFloat = 200) {
+	public init(_ url: URL, maxHeight: CGFloat = 200, contentMode: ContentMode = .fit) {
 		self.url = url
 		self.maxHeight = maxHeight
+		self.contentMode = contentMode
 	}
 
 	public var body: some View {
@@ -17,7 +19,7 @@ public struct RemotePhotoView: View {
 			if let image = phase.image {
 				image
 					.resizable()
-					.scaledToFit()
+					.aspectRatio(contentMode: contentMode)
 					.frame(maxHeight: maxHeight)
 					.cornerRadius(8)
 			} else {
