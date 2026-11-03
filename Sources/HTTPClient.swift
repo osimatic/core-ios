@@ -114,12 +114,19 @@ public class HTTPClient {
 	public static func downloadFile(httpMethod: String, url: String, requestParams: [String: Any], fileName: String, onSuccess: @escaping(HTTPURLResponse, URL) -> Void, onError: @escaping(Error?) -> Void, additionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
 		DispatchQueue.global(qos: .userInitiated).async {
 			var urlWithRequestParams = url;
-			if (HTTPMethod.GET == httpMethod) {
-				urlWithRequestParams += "?"+URLQueryString.getQueryStringFromArray(requestParams);
+			let queryString = URLQueryString.getQueryStringFromArray(requestParams);
+			if (HTTPMethod.GET == httpMethod && !queryString.isEmpty) {
+				urlWithRequestParams += (url.contains("?") ? "&" : "?")+queryString;
 			}
 			NSLog("HTTPClient.downloadFile. Method: %@, URL: %@", httpMethod, urlWithRequestParams);
 
-			let urlObj = URL(string: urlWithRequestParams)!;
+			guard let urlObj = URL(string: urlWithRequestParams) else {
+				NSLog("HTTPClient.downloadFile. Invalid URL: %@", urlWithRequestParams);
+				DispatchQueue.main.async {
+					onError(nil);
+				}
+				return;
+			}
 			var request = URLRequest(url: urlObj);
 
 			// HTTP Headers
@@ -165,6 +172,15 @@ public class HTTPClient {
 					}
 				}
 
+				// Error responses (404, 403, 500…) must not be saved as the downloaded file
+				guard (200..<300).contains(httpResponse.statusCode) else {
+					NSLog("HTTP download failed with status %d ; URL: %@", httpResponse.statusCode, urlObj.absoluteString);
+					DispatchQueue.main.async {
+						onError(nil);
+					}
+					return;
+				}
+
 				let documentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 				let destinationUrl = documentsUrl.appendingPathComponent(fileName);
 
@@ -183,7 +199,9 @@ public class HTTPClient {
 				}
 				catch let error {
 					NSLog("Error writing file %@: %@", destinationUrl.absoluteString, error.localizedDescription);
-					onError(error);
+					DispatchQueue.main.async {
+						onError(error);
+					}
 				}
 			}
 
