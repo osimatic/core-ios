@@ -1,6 +1,38 @@
 import Foundation
 
 /*
+ * Cancels a request started by HTTPClient, including a retry issued after a token refresh.
+ * Once cancelled, the request never delivers a success, but onError is still called with the URLSession cancellation error.
+ */
+public final class HTTPRequestCanceller {
+	private let lock = NSLock();
+	private var task: URLSessionTask?;
+	private var isCancelled = false;
+
+	public init() {}
+
+	/* Internal: attaches the task currently running for the request, or cancels it at once if cancel() was already called. */
+	func attach(_ task: URLSessionTask) {
+		lock.lock();
+		defer { lock.unlock(); }
+		if isCancelled {
+			task.cancel();
+			return;
+		}
+		self.task = task;
+	}
+
+	/* Cancels the running task, if any, and prevents any later retry from starting. */
+	public func cancel() {
+		lock.lock();
+		defer { lock.unlock(); }
+		isCancelled = true;
+		task?.cancel();
+		task = nil;
+	}
+}
+
+/*
  * Utility class for performing HTTP requests with optional JWT bearer authentication
  * and automatic token refresh on 401 responses.
  */
@@ -22,7 +54,7 @@ public class HTTPClient {
 	 * @param asJson                  If true, encodes the body as JSON instead of form-urlencoded.
 	 * @param sendAuthorizationHeader If true, attaches the current authorizationToken as Bearer.
 	 */
-	public static func request(httpMethod: String, url: String, requestParams: [String: Any], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, additionalHttpHeaders: [String: String] = [:], asJson: Bool = false, sendAuthorizationHeader: Bool = true) {
+	public static func request(httpMethod: String, url: String, requestParams: [String: Any], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, additionalHttpHeaders: [String: String] = [:], asJson: Bool = false, sendAuthorizationHeader: Bool = true, canceller: HTTPRequestCanceller? = nil) {
 		var urlWithRequestParams = url;
 		if (HTTPMethod.GET == httpMethod) {
 			urlWithRequestParams += "?"+URLQueryString.getQueryStringFromArray(requestParams);
@@ -74,7 +106,7 @@ public class HTTPClient {
 				if sendAuthorizationHeader, isExpiredToken(httpResponse.statusCode, data) {
 					refreshToken(onComplete: {
 						NSLog("Retry HTTP request after token refresh");
-						HTTPClient.request(httpMethod: httpMethod, url: url, requestParams: requestParams, onSuccess: onSuccess, onError: onError, additionalHttpHeaders: additionalHttpHeaders, asJson: asJson, sendAuthorizationHeader: sendAuthorizationHeader);
+						HTTPClient.request(httpMethod: httpMethod, url: url, requestParams: requestParams, onSuccess: onSuccess, onError: onError, additionalHttpHeaders: additionalHttpHeaders, asJson: asJson, sendAuthorizationHeader: sendAuthorizationHeader, canceller: canceller);
 					});
 					return;
 				}
@@ -92,6 +124,7 @@ public class HTTPClient {
 				}
 			});
 
+			canceller?.attach(task);
 			task.resume();
 		}
 	}
@@ -114,12 +147,19 @@ public class HTTPClient {
 	public static func downloadFile(httpMethod: String, url: String, requestParams: [String: Any], fileName: String, onSuccess: @escaping(HTTPURLResponse, URL) -> Void, onError: @escaping(Error?) -> Void, additionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
 		DispatchQueue.global(qos: .userInitiated).async {
 			var urlWithRequestParams = url;
-			if (HTTPMethod.GET == httpMethod) {
-				urlWithRequestParams += "?"+URLQueryString.getQueryStringFromArray(requestParams);
+			let queryString = URLQueryString.getQueryStringFromArray(requestParams);
+			if (HTTPMethod.GET == httpMethod && !queryString.isEmpty) {
+				urlWithRequestParams += (url.contains("?") ? "&" : "?")+queryString;
 			}
 			NSLog("HTTPClient.downloadFile. Method: %@, URL: %@", httpMethod, urlWithRequestParams);
 
-			let urlObj = URL(string: urlWithRequestParams)!;
+			guard let urlObj = URL(string: urlWithRequestParams) else {
+				NSLog("HTTPClient.downloadFile. Invalid URL: %@", urlWithRequestParams);
+				DispatchQueue.main.async {
+					onError(nil);
+				}
+				return;
+			}
 			var request = URLRequest(url: urlObj);
 
 			// HTTP Headers
@@ -165,6 +205,15 @@ public class HTTPClient {
 					}
 				}
 
+				// Error responses (404, 403, 500…) must not be saved as the downloaded file
+				guard (200..<300).contains(httpResponse.statusCode) else {
+					NSLog("HTTP download failed with status %d ; URL: %@", httpResponse.statusCode, urlObj.absoluteString);
+					DispatchQueue.main.async {
+						onError(nil);
+					}
+					return;
+				}
+
 				let documentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 				let destinationUrl = documentsUrl.appendingPathComponent(fileName);
 
@@ -183,7 +232,9 @@ public class HTTPClient {
 				}
 				catch let error {
 					NSLog("Error writing file %@: %@", destinationUrl.absoluteString, error.localizedDescription);
-					onError(error);
+					DispatchQueue.main.async {
+						onError(error);
+					}
 				}
 			}
 
@@ -477,7 +528,7 @@ public class HTTPClient {
 	 * @param additionalHttpHeaders  Extra headers to include in the request.
 	 * @param sendAuthorizationHeader If true, attaches the current authorizationToken as Bearer.
 	 */
-	public static func multipartRequest(url: String, requestParams: [String: Any], filesByFieldName: [String: [Data]], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, additionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true) {
+	public static func multipartRequest(url: String, requestParams: [String: Any], filesByFieldName: [String: [Data]], onSuccess: @escaping(Data?, HTTPURLResponse) -> Void, onError: @escaping(Error?) -> Void, additionalHttpHeaders: [String: String] = [:], sendAuthorizationHeader: Bool = true, canceller: HTTPRequestCanceller? = nil) {
 		let boundary = generateBoundary();
 		let lineEnd = "\r\n";
 		let twoHyphens = "--";
@@ -539,7 +590,7 @@ public class HTTPClient {
 				if sendAuthorizationHeader, isExpiredToken(httpResponse.statusCode, data) {
 					refreshToken(onComplete: {
 						NSLog("Retry multipartRequest after token refresh");
-						HTTPClient.multipartRequest(url: url, requestParams: requestParams, filesByFieldName: filesByFieldName, onSuccess: onSuccess, onError: onError, additionalHttpHeaders: additionalHttpHeaders, sendAuthorizationHeader: sendAuthorizationHeader);
+						HTTPClient.multipartRequest(url: url, requestParams: requestParams, filesByFieldName: filesByFieldName, onSuccess: onSuccess, onError: onError, additionalHttpHeaders: additionalHttpHeaders, sendAuthorizationHeader: sendAuthorizationHeader, canceller: canceller);
 					});
 					return;
 				}
@@ -557,6 +608,7 @@ public class HTTPClient {
 				}
 			});
 
+			canceller?.attach(task);
 			task.resume();
 		}
 	}
