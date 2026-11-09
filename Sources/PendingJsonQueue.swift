@@ -107,13 +107,18 @@ public class PendingJsonQueue {
 	public static let rejectedKey = "rejected";
 
 	/*
+	 * Key holding the server refusal reason on a rejected item (absent when the outcome has no reason).
+	 */
+	public static let rejectionReasonKey = "rejection_reason";
+
+	/*
 	 * Result of sending one item, returned by the sender passed to drain(send:completion:).
 	 */
 	public enum SendOutcome {
 		/* Item sent: removed from the queue. */
 		case sent
 		/* Item refused by the server: marked with rejectedKey and kept in the queue. */
-		case rejected
+		case rejected(reason: String?)
 		/* Temporary failure: draining stops, this item and the following ones are kept. */
 		case retry
 	}
@@ -159,9 +164,12 @@ public class PendingJsonQueue {
 			switch outcome {
 			case .sent:
 				self.drainStep(snapshot, index: index + 1, updated: updated, send: send, completion: completion);
-			case .rejected:
+			case .rejected(let reason):
 				var marked = item;
 				marked[PendingJsonQueue.rejectedKey] = true;
+				if let reason {
+					marked[PendingJsonQueue.rejectionReasonKey] = reason;
+				}
 				let markedRaw = self.encode(marked) ?? raw;
 				self.drainStep(snapshot, index: index + 1, updated: updated + [markedRaw], send: send, completion: completion);
 			case .retry:

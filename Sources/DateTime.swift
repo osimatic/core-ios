@@ -169,6 +169,16 @@ public class Timestamp {
 		return Date(timeIntervalSince1970: timestamp);
 	}
 
+	/*
+	 * Returns true if the timestamp is at most maxAge seconds old. A timestamp of 0 returns false.
+	 *
+	 * @param timestamp Unix timestamp in seconds.
+	 * @param maxAge    Maximal accepted age, in seconds.
+	 */
+	public static func isWithin(_ timestamp: Double, maxAge: TimeInterval) -> Bool {
+		return Date().timeIntervalSince1970 - timestamp <= maxAge;
+	}
+
 	/* Returns the SQL date string ("yyyy-MM-dd") for a given timestamp. */
 	public static func getSqlDate(_ timestamp: Double) -> String {
 		return Timestamp.getNSDate(timestamp).getSqlDate();
