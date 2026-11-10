@@ -21,6 +21,12 @@ public class PendingJsonQueue {
 	private let defaults: UserDefaults;
 
 	/*
+	 * Lock serializing every read-modify-write of a queue, so that an item enqueued while a drain rewrites the queue is not lost.
+	 * Shared by all queues: operations are short and never hold the lock while sending an item.
+	 */
+	private static let lock = NSLock();
+
+	/*
 	 * Creates a queue with the given name.
 	 *
 	 * @param name      Unique name identifying this queue.
@@ -44,6 +50,8 @@ public class PendingJsonQueue {
 			NSLog("PendingJsonQueue.enqueue: failed to serialize item");
 			return;
 		}
+		PendingJsonQueue.lock.lock();
+		defer { PendingJsonQueue.lock.unlock(); }
 		var list = loadRaw();
 		list.append(json);
 		saveRaw(list);
@@ -71,6 +79,8 @@ public class PendingJsonQueue {
 	 * No-op if the queue is empty.
 	 */
 	public func removeFirst() {
+		PendingJsonQueue.lock.lock();
+		defer { PendingJsonQueue.lock.unlock(); }
 		var list = loadRaw();
 		if (list.isEmpty) { return; }
 		list.removeFirst();
@@ -99,6 +109,41 @@ public class PendingJsonQueue {
 		saveRaw([]);
 	}
 
+	/*
+	 * Returns the number of items marked rejected.
+	 */
+	public func countRejected() -> Int {
+		return getAll().filter { $0[PendingJsonQueue.rejectedKey] as? Bool == true }.count;
+	}
+
+	/*
+	 * Removes the rejected items that were marked more than maxAgeMs milliseconds ago.
+	 * A rejected item without rejectedAtKey (marked before this key existed) is kept.
+	 * Must not be called while a drain is running (it would shift the items the drain is about to replace): call it just before draining.
+	 *
+	 * @param maxAgeMs Maximum age of a rejected item, in milliseconds.
+	 * @return The number of removed items.
+	 */
+	@discardableResult
+	public func removeRejected(maxAgeMs: Int64) -> Int {
+		PendingJsonQueue.lock.lock();
+		defer { PendingJsonQueue.lock.unlock(); }
+		let limit = Int64(Date().timeIntervalSince1970 * 1000) - maxAgeMs;
+		let list = loadRaw();
+		let kept = list.filter { raw in
+			guard let item = decode(raw),
+				  item[PendingJsonQueue.rejectedKey] as? Bool == true,
+				  let rejectedAt = (item[PendingJsonQueue.rejectedAtKey] as? NSNumber)?.int64Value else { return true; }
+			return rejectedAt >= limit;
+		};
+		let removed = list.count - kept.count;
+		if (removed > 0) {
+			saveRaw(kept);
+			NSLog("PendingJsonQueue.removeRejected: %d rejected item(s) removed", removed);
+		}
+		return removed;
+	}
+
 	// MARK: - Drain
 
 	/*
@@ -110,6 +155,11 @@ public class PendingJsonQueue {
 	 * Key holding the server refusal reason on a rejected item (absent when the outcome has no reason).
 	 */
 	public static let rejectionReasonKey = "rejection_reason";
+
+	/*
+	 * Key holding the time (milliseconds since epoch) at which an item was marked rejected.
+	 */
+	public static let rejectedAtKey = "rejected_at";
 
 	/*
 	 * Result of sending one item, returned by the sender passed to drain(send:completion:).
@@ -167,6 +217,7 @@ public class PendingJsonQueue {
 			case .rejected(let reason):
 				var marked = item;
 				marked[PendingJsonQueue.rejectedKey] = true;
+				marked[PendingJsonQueue.rejectedAtKey] = Int64(Date().timeIntervalSince1970 * 1000);
 				if let reason {
 					marked[PendingJsonQueue.rejectionReasonKey] = reason;
 				}
@@ -184,6 +235,8 @@ public class PendingJsonQueue {
 	 * Replaces the first processedCount entries with updated, keeping the entries enqueued after them.
 	 */
 	private func replaceHead(processedCount: Int, updated: [String]) {
+		PendingJsonQueue.lock.lock();
+		defer { PendingJsonQueue.lock.unlock(); }
 		let current = loadRaw();
 		let head = min(processedCount, current.count);
 		saveRaw(updated + Array(current[head...]));

@@ -27,6 +27,36 @@ public class File {
 	}
 
 	/*
+	 * Deletes the files of a directory whose name is not in the given list and which were last modified more than the given duration ago.
+	 * The minimum age protects a file that has just been written but is not yet referenced by its owner. Sub-directories are left untouched.
+	 *
+	 * @param directoryPath   The path of the directory to clean.
+	 * @param fileNamesToKeep The names (without path) of the files to keep.
+	 * @param minAgeMs        The minimum time since last modification, in milliseconds, for a file to be deleted.
+	 * @return The number of deleted files.
+	 */
+	@discardableResult
+	public static func deleteFilesNotIn(_ directoryPath: String, fileNamesToKeep: [String], minAgeMs: Int64) -> Int {
+		let manager = FileManager.default;
+		guard let fileNames = try? manager.contentsOfDirectory(atPath: directoryPath) else { return 0; }
+
+		let namesToKeep = Set(fileNamesToKeep);
+		let limit = Date().addingTimeInterval(-Double(minAgeMs) / 1000);
+		var nbDeleted = 0;
+		for fileName in fileNames where !namesToKeep.contains(fileName) {
+			let path = (directoryPath as NSString).appendingPathComponent(fileName);
+			var isDirectory: ObjCBool = false;
+			guard manager.fileExists(atPath: path, isDirectory: &isDirectory), !isDirectory.boolValue,
+				  let modificationDate = (try? manager.attributesOfItem(atPath: path))?[.modificationDate] as? Date,
+				  modificationDate < limit else { continue; }
+			if ((try? manager.removeItem(atPath: path)) != nil) {
+				nbDeleted += 1;
+			}
+		}
+		return nbDeleted;
+	}
+
+	/*
 	 * Downloads a file synchronously from the given URL and saves it to the documents directory.
 	 * If the file already exists locally it is returned immediately without re-downloading.
 	 *

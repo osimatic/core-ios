@@ -139,6 +139,34 @@ public class Image {
 	public static func convertBase64StringsToImages(_ strings: [String]) -> [UIImage] {
 		return strings.compactMap { convertBase64StringToImage($0) };
 	}
+
+	/*
+	 * Saves the image as a JPEG file, creating the parent directory if needed and overwriting any existing file.
+	 * A failure is reported to the caller.
+	 *
+	 * @param img                The image to save.
+	 * @param fileUrl            The destination file URL.
+	 * @param compressionQuality JPEG compression quality (default: 0.85).
+	 * @throws An error if the image cannot be encoded, the directory cannot be created or the file cannot be written.
+	 */
+	public static func saveToFile(_ img: UIImage, _ fileUrl: URL, compressionQuality: CGFloat = 0.85) throws {
+		guard let data = img.jpegData(compressionQuality: compressionQuality) else {
+			throw CocoaError(.fileWriteUnknown);
+		}
+		try FileManager.default.createDirectory(at: fileUrl.deletingLastPathComponent(), withIntermediateDirectories: true);
+		try data.write(to: fileUrl, options: .atomic);
+	}
+
+	/*
+	 * Decodes the image stored in the given file.
+	 *
+	 * @param fileUrl The image file URL.
+	 * @return The decoded UIImage, or nil if the file does not exist or cannot be decoded.
+	 */
+	public static func decodeFile(_ fileUrl: URL) -> UIImage? {
+		guard let data = try? Data(contentsOf: fileUrl) else { return nil; }
+		return UIImage(data: data);
+	}
 	
 	/*
 	static func scale(image originalImage: UIImage, toLessThan maxResolution: CGFloat) -> UIImage? {

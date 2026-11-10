@@ -22,6 +22,55 @@ public extension String {
 	}
 
 	/*
+	 * Handles singular/plural forms in a string based on a number.
+	 *
+	 * {#} is replaced by the number. Each {...} group holds up to three alternatives separated by |, and is replaced by the one matching the number:
+	 *  - three alternatives: zero, singular (1), plural;
+	 *  - two alternatives: singular (0 and 1), plural;
+	 *  - one alternative: empty for 0 and 1, the alternative otherwise.
+	 *
+	 * Examples:
+	 *   String.pluralize("{No item|1 item|{#} items}", 0)  = "No item"
+	 *   String.pluralize("{No item|1 item|{#} items}", 1)  = "1 item"
+	 *   String.pluralize("{No item|1 item|{#} items}", 5)  = "5 items"
+	 *   String.pluralize("{#} pointage{s}", 3)             = "3 pointages"
+	 *   String.pluralize("{#} {cheval|chevaux}", 3)        = "3 chevaux"
+	 *
+	 * @param string The string to convert to singular or plural form.
+	 * @param nb     The number of elements that determines whether the string is singular or plural.
+	 * @return The string in singular or plural form.
+	 */
+	static func pluralize(_ string: String, _ nb: Double) -> String {
+		let isWholeNumber = nb.isFinite && nb == nb.rounded() && abs(nb) < 9e15;
+		var result = string.replacingOccurrences(of: "{#}", with: isWholeNumber ? String(Int64(nb)) : String(nb));
+
+		guard let regex = try? NSRegularExpression(pattern: "\\{(.*?)\\}") else { return result; }
+		let matches = regex.matches(in: result, range: NSRange(result.startIndex..., in: result));
+		// Matches are replaced from the last to the first so that the ranges of the previous ones stay valid
+		for match in matches.reversed() {
+			guard let fullRange = Range(match.range, in: result), let groupRange = Range(match.range(at: 1), in: result) else { continue; }
+			let parts = result[groupRange].components(separatedBy: "|");
+			let mod: String;
+			if (nb == 0) {
+				mod = parts.count == 1 ? "" : parts[0];
+			} else if (nb == 1) {
+				mod = parts.count == 1 ? "" : (parts.count == 2 ? parts[0] : parts[1]);
+			} else {
+				mod = parts.count == 1 ? parts[0] : (parts.count == 2 ? parts[1] : parts[2]);
+			}
+			result.replaceSubrange(fullRange, with: mod);
+		}
+		return result;
+	}
+
+	/*
+	 * Same as pluralize(_:_:) with an integer number.
+	 */
+	static func pluralize(_ string: String, _ nb: Int) -> String {
+		return pluralize(string, Double(nb));
+	}
+
+	/*
 	 * Converts this string into an NSAttributedString with optional font and text alignment.
 	 *
 	 * @param font          Optional font to apply.
