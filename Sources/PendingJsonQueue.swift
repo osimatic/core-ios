@@ -103,6 +103,30 @@ public class PendingJsonQueue {
 	}
 
 	/*
+	 * Removes the items selected by the closure.
+	 * Must not be called while a drain is running (it would shift the items the drain is about to replace): the caller must make sure of it.
+	 *
+	 * @param matches Returns true for the items to remove.
+	 * @return The number of removed items.
+	 */
+	@discardableResult
+	public func remove(where matches: ([String: Any]) -> Bool) -> Int {
+		PendingJsonQueue.lock.lock();
+		defer { PendingJsonQueue.lock.unlock(); }
+		let list = loadRaw();
+		let kept = list.filter { raw in
+			guard let item = decode(raw) else { return true; }
+			return !matches(item);
+		};
+		let removed = list.count - kept.count;
+		if (removed > 0) {
+			saveRaw(kept);
+			NSLog("PendingJsonQueue.remove: %d item(s) removed", removed);
+		}
+		return removed;
+	}
+
+	/*
 	 * Removes all items from the queue.
 	 */
 	public func clear() {
@@ -162,6 +186,21 @@ public class PendingJsonQueue {
 	public static let rejectedAtKey = "rejected_at";
 
 	/*
+	 * Key holding the number of sends that failed temporarily (retry outcome). Absent until a send has failed.
+	 */
+	public static let attemptsKey = "attempts";
+
+	/*
+	 * Key holding the time (milliseconds since epoch) of the last send that failed temporarily.
+	 */
+	public static let lastAttemptAtKey = "last_attempt_at";
+
+	/*
+	 * Key holding the cause of the last temporary failure (absent when the send gave no cause).
+	 */
+	public static let lastErrorKey = "last_error";
+
+	/*
 	 * Result of sending one item, returned by the sender passed to drain(send:completion:).
 	 */
 	public enum SendOutcome {
@@ -169,8 +208,8 @@ public class PendingJsonQueue {
 		case sent
 		/* Item refused by the server: marked with rejectedKey and kept in the queue. */
 		case rejected(reason: String?)
-		/* Temporary failure: draining stops, this item and the following ones are kept. */
-		case retry
+		/* Temporary failure: draining stops, this item and the following ones are kept, and the failure is recorded on the item (attemptsKey, lastAttemptAtKey, lastErrorKey). */
+		case retry(reason: String? = nil)
 	}
 
 	/*
@@ -223,9 +262,16 @@ public class PendingJsonQueue {
 				}
 				let markedRaw = self.encode(marked) ?? raw;
 				self.drainStep(snapshot, index: index + 1, updated: updated + [markedRaw], send: send, completion: completion);
-			case .retry:
-				// Stop here: this item and the following ones are kept unchanged
-				self.replaceHead(processedCount: snapshot.count, updated: updated + Array(snapshot[index...]));
+			case .retry(let reason):
+				// Stop here: the failure is recorded on this item, which is kept with the following ones (unchanged)
+				var marked = item;
+				marked[PendingJsonQueue.attemptsKey] = ((item[PendingJsonQueue.attemptsKey] as? Int) ?? 0) + 1;
+				marked[PendingJsonQueue.lastAttemptAtKey] = Int64(Date().timeIntervalSince1970 * 1000);
+				if let reason {
+					marked[PendingJsonQueue.lastErrorKey] = reason;
+				}
+				let markedRaw = self.encode(marked) ?? raw;
+				self.replaceHead(processedCount: snapshot.count, updated: updated + [markedRaw] + Array(snapshot[(index + 1)...]));
 				completion(false);
 			}
 		}
