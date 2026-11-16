@@ -90,4 +90,11 @@ public class Json {
 	public static func getDateTimeOrNull(_ value: Any?) -> Date? {
 		return !Json.isNull(value) ? Timestamp.getNSDate(value as! Double) : nil;
 	}
+
+	/* Writes the value only if it is neither nil nor empty (the key stays absent otherwise). */
+	public static func putIfNotEmpty(_ dict: inout [String: Any], _ key: String, _ value: String?) {
+		if let value, !value.isEmpty {
+			dict[key] = value;
+		}
+	}
 }

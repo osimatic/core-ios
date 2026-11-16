@@ -27,6 +27,24 @@ public class PendingJsonQueue {
 	private static let lock = NSLock();
 
 	/*
+	 * Storage keys of the queues being drained (guarded by lock): a queue is drained by one drain at a time, and no item is removed during a drain.
+	 */
+	private static var drainingKeys: Set<String> = [];
+
+	/*
+	 * Storage keys of the queues whose clear() was requested during a drain (guarded by lock): the queue is cleared when the drain ends, otherwise the drain would write back the cleared items.
+	 */
+	private static var pendingClearKeys: Set<String> = [];
+
+	/*
+	 * Posted (on the main thread) each time a queue changes: item added or removed, queue cleared, end of a drain.
+	 * The notification object is the queue name given to init, so that an observer can filter on its queue.
+	 */
+	public static let didChangeNotification = Notification.Name("PendingJsonQueueDidChange");
+
+	private let name: String;
+
+	/*
 	 * Creates a queue with the given name.
 	 *
 	 * @param name      Unique name identifying this queue.
@@ -35,6 +53,7 @@ public class PendingJsonQueue {
 	 *                  Defaults to UserDefaults.standard when nil.
 	 */
 	public init(_ name: String, suiteName: String? = nil) {
+		self.name = name;
 		self.storageKey = "pending_queue_" + name;
 		self.defaults = suiteName.flatMap { UserDefaults(suiteName: $0) } ?? UserDefaults.standard;
 	}
@@ -56,6 +75,16 @@ public class PendingJsonQueue {
 		list.append(json);
 		saveRaw(list);
 		NSLog("PendingJsonQueue.enqueue: queue size is now %d", list.count);
+		notifyChanged();
+	}
+
+	/*
+	 * Returns true if a drain is in progress on this queue.
+	 */
+	public func isDraining() -> Bool {
+		PendingJsonQueue.lock.lock();
+		defer { PendingJsonQueue.lock.unlock(); }
+		return PendingJsonQueue.drainingKeys.contains(storageKey);
 	}
 
 	/*
@@ -72,6 +101,24 @@ public class PendingJsonQueue {
 			}
 			return obj;
 		};
+	}
+
+	/*
+	 * Returns the queued items selected by the closure, in insertion order.
+	 *
+	 * @param matches Returns true for the items to return.
+	 */
+	public func getAll(where matches: ([String: Any]) -> Bool) -> [[String: Any]] {
+		return getAll().filter(matches);
+	}
+
+	/*
+	 * Returns the number of queued items selected by the closure.
+	 *
+	 * @param matches Returns true for the items to count.
+	 */
+	public func count(where matches: ([String: Any]) -> Bool) -> Int {
+		return getAll(where: matches).count;
 	}
 
 	/*
@@ -103,16 +150,19 @@ public class PendingJsonQueue {
 	}
 
 	/*
-	 * Removes the items selected by the closure.
-	 * Must not be called while a drain is running (it would shift the items the drain is about to replace): the caller must make sure of it.
+	 * Removes the items selected by the closure, without waiting: refused if a drain is in progress (it would shift the items the drain is about to replace).
+	 * The closure is called for each item, including the ones about to be removed (it can clean up resources attached to them).
 	 *
 	 * @param matches Returns true for the items to remove.
-	 * @return The number of removed items.
+	 * @return The number of removed items, or -1 if a drain is in progress (nothing is removed: the caller can try again later).
 	 */
 	@discardableResult
-	public func remove(where matches: ([String: Any]) -> Bool) -> Int {
+	public func tryRemove(where matches: ([String: Any]) -> Bool) -> Int {
 		PendingJsonQueue.lock.lock();
-		defer { PendingJsonQueue.lock.unlock(); }
+		if (PendingJsonQueue.drainingKeys.contains(storageKey)) {
+			PendingJsonQueue.lock.unlock();
+			return -1;
+		}
 		let list = loadRaw();
 		let kept = list.filter { raw in
 			guard let item = decode(raw) else { return true; }
@@ -121,16 +171,28 @@ public class PendingJsonQueue {
 		let removed = list.count - kept.count;
 		if (removed > 0) {
 			saveRaw(kept);
-			NSLog("PendingJsonQueue.remove: %d item(s) removed", removed);
+			NSLog("PendingJsonQueue.tryRemove: %d item(s) removed", removed);
+		}
+		PendingJsonQueue.lock.unlock();
+		if (removed > 0) {
+			notifyChanged();
 		}
 		return removed;
 	}
 
 	/*
 	 * Removes all items from the queue.
+	 * If a drain is in progress, the queue is cleared when it ends (the drain would write back the cleared items otherwise).
 	 */
-	public func clear() {
-		saveRaw([]);
+	public func clearAll() {
+		PendingJsonQueue.lock.lock();
+		if (PendingJsonQueue.drainingKeys.contains(storageKey)) {
+			PendingJsonQueue.pendingClearKeys.insert(storageKey);
+		} else {
+			saveRaw([]);
+		}
+		PendingJsonQueue.lock.unlock();
+		notifyChanged();
 	}
 
 	/*
@@ -143,7 +205,7 @@ public class PendingJsonQueue {
 	/*
 	 * Removes the rejected items that were marked more than maxAgeMs milliseconds ago.
 	 * A rejected item without rejectedAtKey (marked before this key existed) is kept.
-	 * Must not be called while a drain is running (it would shift the items the drain is about to replace): call it just before draining.
+	 * Does nothing while a drain is running (it would shift the items the drain is about to replace): call it just before draining.
 	 *
 	 * @param maxAgeMs Maximum age of a rejected item, in milliseconds.
 	 * @return The number of removed items.
@@ -152,6 +214,7 @@ public class PendingJsonQueue {
 	public func removeRejected(maxAgeMs: Int64) -> Int {
 		PendingJsonQueue.lock.lock();
 		defer { PendingJsonQueue.lock.unlock(); }
+		if (PendingJsonQueue.drainingKeys.contains(storageKey)) { return 0; }
 		let limit = Int64(Date().timeIntervalSince1970 * 1000) - maxAgeMs;
 		let list = loadRaw();
 		let kept = list.filter { raw in
@@ -220,11 +283,32 @@ public class PendingJsonQueue {
 	 * are kept at the end of the queue.
 	 *
 	 * @param send       Sends one item and calls its completion exactly once with the outcome.
-	 * @param completion Called once with true if the whole queue was processed, false if a retry is needed.
+	 * @param completion Called once with true if the whole queue was processed, false if a retry is needed (also when a drain is already in progress on this queue: nothing is sent).
 	 */
 	public func drain(send: @escaping ([String: Any], @escaping (SendOutcome) -> Void) -> Void, completion: @escaping (Bool) -> Void) {
+		PendingJsonQueue.lock.lock();
+		if (PendingJsonQueue.drainingKeys.contains(storageKey)) {
+			PendingJsonQueue.lock.unlock();
+			completion(false);
+			return;
+		}
+		PendingJsonQueue.drainingKeys.insert(storageKey);
+		PendingJsonQueue.lock.unlock();
+
+		let finish: (Bool) -> Void = { [weak self] drained in
+			guard let self else { completion(drained); return; }
+			PendingJsonQueue.lock.lock();
+			PendingJsonQueue.drainingKeys.remove(self.storageKey);
+			if (PendingJsonQueue.pendingClearKeys.remove(self.storageKey) != nil) {
+				self.saveRaw([]);
+			}
+			PendingJsonQueue.lock.unlock();
+			self.notifyChanged();
+			completion(drained);
+		};
+
 		let snapshot = loadRaw();
-		drainStep(snapshot, index: 0, updated: [], send: send, completion: completion);
+		drainStep(snapshot, index: 0, updated: [], send: send, completion: finish);
 	}
 
 // MARK: - Private
@@ -286,6 +370,16 @@ public class PendingJsonQueue {
 		let current = loadRaw();
 		let head = min(processedCount, current.count);
 		saveRaw(updated + Array(current[head...]));
+	}
+
+	/*
+	 * Posts didChangeNotification on the main thread, asynchronously: an observer can call the queue back without deadlocking.
+	 */
+	private func notifyChanged() {
+		let queueName = name;
+		DispatchQueue.main.async {
+			NotificationCenter.default.post(name: PendingJsonQueue.didChangeNotification, object: queueName);
+		};
 	}
 
 	private func decode(_ raw: String) -> [String: Any]? {
